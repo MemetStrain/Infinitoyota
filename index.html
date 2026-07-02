@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Canvas Studio</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        :root {
+            --bg-canvas: #f0f4f8;
+            --surface-white: #ffffff;
+            --slate-text: #0f172a;
+            --slate-muted: #64748b;
+            --border-soft: #e2e8f0;
+
+            /* TIER COLOR PALETTES */
+            --t1-base: #64748b;   /* Slate Gray */
+            --t1-light: #f1f5f9;
+            
+            --t2-base: #0284c7;   /* Sky Blue */
+            --t2-light: #e0f2fe;
+
+            --t3-base: #9333ea;   /* Amethyst Purple */
+            --t3-light: #f3e8ff;
+
+            --t4-base: #d97706;   /* Amber Gold */
+            --t4-light: #fef3c7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background-color: var(--bg-canvas);
+            margin: 0;
+            height: 100vh;
+            box-sizing: border-box;
+            color: var(--slate-text);
+        }
+
+        /* --- LEFT SIDEBAR: THE CATALOG --- */
+        #inventory {
+            width: 220px;
+            min-width: 180px;
+            background: var(--surface-white);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+            border: 1px solid var(--border-soft);
+            flex-shrink: 0;
+            z-index: 2;
+            overflow-y: auto;
+        }
+
+        .stats-box {
+            background: var(--bg-canvas);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border-soft);
+        }
+
+        .stats-box p {
+            margin: 0 0 6px 0;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate-muted);
+            font-weight: 700;
+        }
+
+        .stats-box .numbers {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--t2-base);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .sidebar-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--surface-white);
+            color: var(--slate-text);
+            border: 1px solid var(--border-soft);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        #reset-btn:hover {
+            border-color: #f43f5e;
+            color: #f43f5e;
+            background: #fff1f2;
+        }
+
+        #tree-btn {
+            background: var(--slate-text);
+            color: var(--surface-white);
+            border-color: var(--slate-text);
+        }
+        #tree-btn:hover { background: #334155; }
+
+        h2 {
+            margin: 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--slate-muted);
+        }
+
+        /* Tier section group */
+        .tier-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tier-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 2px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tier-group-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--slate-muted);
+        }
+
+        .tier-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+        .tier-chevron {
+            font-size: 0.55rem;
+            color: var(--slate-muted);
+            margin-left: 3px;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .tier-group.collapsed .tier-chevron {
+            transform: rotate(-90deg);
+        }
+
+        .tier-counter {
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 10px;
+        }
+
+        .tier-items-list {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 4px;
+            overflow: hidden;
+            max-height: 500px;
+            transition: max-height 0.25s ease, opacity 0.2s ease;
+            opacity: 1;
+        }
+
+        .tier-group.collapsed .tier-items-list {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Draggable Base Cards */
+        .item {
+            padding: 5px 9px;
+            background: var(--surface-white);
+            border: 1px solid var(--border-soft);
+            border-left: 3px solid var(--t1-base);
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.68rem;
+            cursor: grab;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .item[data-tier="1"] { background: rgba(100, 116, 139, 0.08); border-left: 1px solid var(--border-soft); }
+        .item[data-tier="2"] { background: rgba(2, 132, 199, 0.08); border-left: 1px solid var(--border-soft); }
+        .item[data-tier="3"] { background: rgba(147, 51, 234, 0.08); border-left: 1px solid var(--border-soft); }
+        .item[data-tier="4"] { background: rgba(217, 119, 6, 0.08); border-left: 1px solid var(--border-soft); }
+
+        .item::after {
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .item[data-tier="1"]::after { color: var(--t1-base); }
+        .item[data-tier="2"]::after { color: var(--t2-base); }
+        .item[data-tier="3"]::after { color: var(--t3-base); }
+        .item[data-tier="4"]::after { color: var(--t4-base); }
+
+        .item:hover { transform: translateX(4px); }
+        .item:hover::after { opacity: 1; }
+        .item:active { cursor: grabbing; transform: translateX(2px); }
+
+        /* Undiscovered placeholder */
+        .item-locked {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: #94a3b8;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            user-select: none;
+            font-style: italic;
+        }
+
+        /* --- RIGHT SIDE: THE CANVAS + TRASH --- */
+        #board-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        #board {
+            flex-grow: 1;
+            background-color: var(--surface-white);
+            border-radius: 16px;
+            position: relative;
+            border: 1px solid var(--border-soft);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.02), 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+            background-position: -14px -14px;
+        }
+
+        #board-title {
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        #trash-zone {
+            height: 56px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        #trash-zone.drag-over {
+            border-color: #f43f5e;
+            background: #fff1f2;
+            color: #f43f5e;
+        }
+
+        /* --- DYNAMIC TIERED PILLS ON CANVAS --- */
+        .board-item {
+            position: absolute;
+            cursor: grab;
+            padding: 10px 20px;
+            background: var(--surface-white);
+            border: 2px solid;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            user-select: none;
+            animation: gentleFloat 4s ease-in-out infinite;
+        }
+
+        /* TIER Profiles */
+        .board-item[data-tier="1"] { border-color: var(--t1-base); color: var(--t1-base); box-shadow: 0 8px 20px -5px rgba(100, 116, 139, 0.22), 0 0 0 3px var(--t1-light); }
+        .board-item[data-tier="1"]:active { box-shadow: 0 12px 28px -5px rgba(100, 116, 139, 0.4), 0 0 0 5px var(--t1-light); }
+
+        .board-item[data-tier="2"] { border-color: var(--t2-base); color: var(--t2-base); box-shadow: 0 8px 20px -5px rgba(2, 132, 199, 0.22), 0 0 0 3px var(--t2-light); }
+        .board-item[data-tier="2"]:active { box-shadow: 0 12px 28px -5px rgba(2, 132, 199, 0.4), 0 0 0 5px var(--t2-light); }
+
+        .board-item[data-tier="3"] { border-color: var(--t3-base); color: var(--t3-base); box-shadow: 0 8px 20px -5px rgba(147, 51, 234, 0.22), 0 0 0 3px var(--t3-light); }
+        .board-item[data-tier="3"]:active { box-shadow: 0 12px 28px -5px rgba(147, 51, 234, 0.4), 0 0 0 5px var(--t3-light); }
+
+        .board-item[data-tier="4"] { border-color: var(--t4-base); color: var(--t4-base); box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.22), 0 0 0 3px var(--t4-light); }
+        .board-item[data-tier="4"]:active { box-shadow: 0 12px 28px -5px rgba(217, 119, 6, 0.4), 0 0 0 5px var(--t4-light); }
+
+        .board-item.pop { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        @keyframes popIn {
+            0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+            60%  { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes gentleFloat {
+            0%, 100% { transform: translate(-50%, -50%); }
+            50%       { transform: translate(-50%, -53%); }
+        }
+
+        .board-item:active { cursor: grabbing; animation: none; transform: translate(-50%, -50%) scale(1.04); z-index: 999; }
+
+        /* --- RECIPE TREE MODAL --- */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        #modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        #modal-card {
+            background: var(--surface-white);
+            width: 520px;
+            max-width: 90vw; max-height: 80vh;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2);
+            border: 1px solid var(--border-soft);
+            display: flex; flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-soft);
+            padding-bottom: 16px; margin-bottom: 20px;
+        }
+        .modal-header h3 { margin: 0; font-size: 1.1rem; }
+        .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--slate-muted); }
+
+        #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
+        .tree-node { margin: 12px 0; }
+        
+        .tree-parent {
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 0.85rem;
+            border: 1px solid;
+        }
+
+        .tree-children {
+            list-style: none; padding-left: 24px; margin: 4px 0 12px 0;
+            border-left: 2px solid var(--border-soft);
+        }
+
+        .tree-child-item {
+            margin: 6px 0; position: relative; font-size: 0.82rem; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tree-child-item::before {
+            content: ''; position: absolute; left: -24px; top: 50%;
+            width: 16px; height: 2px; background: var(--border-soft);
+        }
+
+        .tier-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .empty-tree { text-align: center; color: var(--slate-muted); padding: 40px 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div id="inventory">
+        <div class="stats-box">
+            <p>Discovered Insights</p>
+            <div class="numbers"><span id="counter">0</span> / <span id="total">0</span></div>
+            <div class="btn-group">
+                <button id="tree-btn" class="sidebar-btn">Discovery Tree</button>
+                <button id="reset-btn" class="sidebar-btn">Reset Workspace</button>
+            </div>
+        </div>  
+
+        <h2>Insights Collection</h2>
+        <div id="base-items-container"></div>
+    </div>
+
+    <div id="board-area">
+        <div id="board">
+            <h2 id="board-title">Logic Sandbox</h2>
+        </div>
+        <div id="trash-zone">
+            <span class="trash-icon">🗑️</span>
+            <span>Drop here to remove</span>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-card">
+            <div class="modal-header">
+                <h3>Discovery Architecture</h3>
+                <button class="close-btn" id="close-modal">✕</button>
+            </div>
+            <div id="tree-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const STARTING_ITEMS = [
+            "Outlet Data",
+            "Dealer Data",
+            "Transaction Data",
+            "Customer Data",
+            "Vehicle Data"
+        ];
+
+        const RECIPES = {
+            // --- THE CANON (Your original Tier 2s) ---
+            "Customer Data+Vehicle Data": "Vehicle Ownership Data",                // T1 + T1 = T2
+            "Dealer Data+Outlet Data": "Network Data",                             // T1 + T1 = T2
+            "Customer Data+Transaction Data": "Purchase History",                  // T1 + T1 = T2
+
+            // --- NEW TIER 2s: The Horizontal Joins ---
+            "Vehicle Data+Transaction Data": "Vehicle Market Valuation",           // T1 + T1 = T2 (Depreciation & Book Value)
+            "Vehicle Data+Outlet Data": "Lot Inventory Data",                      // T1 + T1 = T2 (What physical metal is sitting where)
+            "Customer Data+Outlet Data": "Geo-Catchment Demographics",             // T1 + T1 = T2 (Drive-time radiuses to our shops)
+            "Dealer Data+Transaction Data": "Dealer Margin Profile",               // T1 + T1 = T2 (Who sells at MSRP vs. who gouges)
+
+            // --- THE CANON (Your original Tier 3) ---
+            "Vehicle Ownership Data+Transaction Data": "Customer Behavior Data",   // T2 + T1 = T3
+
+            // --- NEW TIER 3s: The Contextual Layers ---
+            "Lot Inventory Data+Transaction Data": "Inventory Velocity Index",     // T2 + T1 = T3 (Days-on-lot / Sell-through rates)
+            "Vehicle Ownership Data+Outlet Data": "Service Bay Retention",         // T2 + T1 = T3 (Do they come back to us for oil changes?)
+            "Purchase History+Vehicle Market Valuation": "Customer Equity Position",// T2 + T2 = T3 (Are they underwater on their 84-month loan?)
+            "Purchase History+Customer Data": "Customer Lifetime Value (LTV)",     // T2 + T1 = T3 (Total gross profit pulled from this human)
+
+            // --- THE CANON (Your original Tier 4 - Gold!) ---
+            "Customer Behavior Data+Network Data": "Enterprise Master Profile",    // T3 + T2 = T4
+
+            // --- NEW TIER 4s: The Predictive Targets ---
+            "Inventory Velocity Index+Dealer Margin Profile": "Stock Allocation Engine", // T3 + T2 = T4 (Where to ship the fast-moving hybrids)
+            "Customer Equity Position+Customer Lifetime Value (LTV)": "Conquest & Upgrade Score", // T3 + T3 = T4 (The "Call them on Tuesday" list)
+            "Service Bay Retention+Vehicle Market Valuation": "Service Defection Risk", // T3 + T2 = T4 (Predicting when they start going to Jiffy Lube)
+        };
+
+        // 2. SETUP & TIER MATH ENGINE
+        const inventoryContainer = document.getElementById('base-items-container');
+        const board = document.getElementById('board');
+        const trashZone = document.getElementById('trash-zone');
+        const counterEl = document.getElementById('counter');
+        const totalEl = document.getElementById('total');
+        const resetBtn = document.getElementById('reset-btn');
+        const treeBtn = document.getElementById('tree-btn');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const closeModalBtn = document.getElementById('close-modal');
+        const treeContainer = document.getElementById('tree-container');
+
+        let draggedElement = null;
+        let discoveredItems = new Set(STARTING_ITEMS);
+
+        const CLEANED_RECIPES = {};
+        Object.keys(RECIPES).forEach(key => {
+            const sortedKey = key.split('+').sort().join('+');
+            CLEANED_RECIPES[sortedKey] = RECIPES[key];
+        });
+
+        // --- THE TIER CALCULATOR ---
+        const CONCEPT_TIERS = {};
+        function calculateAllTiers() {
+            STARTING_ITEMS.forEach(item => CONCEPT_TIERS[item] = 1);
+
+            let unstable = true;
+            let infiniteLoopGuard = 0;
+
+            while (unstable && infiniteLoopGuard < 100) {
+                unstable = false;
+                infiniteLoopGuard++;
+
+                Object.keys(CLEANED_RECIPES).forEach(formula => {
+                    const result = CLEANED_RECIPES[formula];
+                    const [ing1, ing2] = formula.split('+');
+
+                    if (CONCEPT_TIERS[ing1] && CONCEPT_TIERS[ing2]) {
+                        const computedTier = Math.max(CONCEPT_TIERS[ing1], CONCEPT_TIERS[ing2]) + 1;
+                        const assignedTier = Math.min(computedTier, 4); 
+
+                        if (CONCEPT_TIERS[result] !== assignedTier) {
+                            CONCEPT_TIERS[result] = assignedTier;
+                            unstable = true; 
+                        }
+                    }
+                });
+            }
+        }
+        
+        calculateAllTiers();
+
+        const RECIPE_PARENTS = {};
+        Object.keys(CLEANED_RECIPES).forEach(formula => {
+            const result = CLEANED_RECIPES[formula];
+            RECIPE_PARENTS[result] = formula.split('+');
+        });
+
+        const ALL_ITEMS = [...STARTING_ITEMS, ...Object.values(CLEANED_RECIPES)];
+        const ALL_UNIQUE = [...new Set(ALL_ITEMS)];
+
+        // --- NEW: STRICTLY EXCLUDE TIER 1 FROM THE TOTAL SCORE ---
+        const DERIVED_INSIGHTS_ONLY = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) > 1);
+        totalEl.textContent = DERIVED_INSIGHTS_ONLY.length;
+
+        const TIER_META = {
+            1: { label: 'Tier 1: Source', color: 'var(--t1-base)', light: 'var(--t1-light)' },
+            2: { label: 'Tier 2: Standard', color: 'var(--t2-base)', light: 'var(--t2-light)' },
+            3: { label: 'Tier 3: Advanced', color: 'var(--t3-base)', light: 'var(--t3-light)' },
+            4: { label: 'Tier 4: Master',   color: 'var(--t4-base)', light: 'var(--t4-light)' },
+        };
+
+        function updateProgress() {
+            // --- NEW: STRICTLY EXCLUDE TIER 1 FROM THE CURRENT SCORE ---
+            const unlockedInsights = [...discoveredItems].filter(name => (CONCEPT_TIERS[name] || 1) > 1);
+            counterEl.textContent = unlockedInsights.length;
+
+            // Update each tier counter badge in the catalog
+            [1, 2, 3, 4].forEach(tier => {
+                const badge = document.getElementById(`tier-counter-${tier}`);
+                const list  = document.getElementById(`tier-list-${tier}`);
+                if (!badge || !list) return;
+
+                const tierItems = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) === tier);
+                const found = tierItems.filter(name => discoveredItems.has(name)).length;
+                badge.textContent = `${found}/${tierItems.length}`;
+
+                tierItems.forEach(name => {
+                    if (discoveredItems.has(name) && !list.querySelector(`[data-name="${CSS.escape(name)}"]`)) {
+                        const el = document.createElement('div');
+                        el.className = 'item';
+                        el.draggable = true;
+                        el.textContent = name;
+                        el.dataset.name = name;
+                        el.dataset.tier = tier;
+                        el.dataset.source = 'inventory';
+                        list.appendChild(el);
+
+                        const locked = list.querySelector('.item-locked');
+                        if (locked) locked.remove();
+                    }
+                });
+            });
+        }
+
+        function initInventory() {
+            inventoryContainer.innerHTML = '';
+
+            [1, 2, 3, 4].forEach(tier => {
+                const meta = TIER_META[tier];
+                const tierItems = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) === tier);
+                const found = tierItems.filter(name => discoveredItems.has(name)).length;
+
+                const group = document.createElement('div');
+                group.className = 'tier-group'; group.dataset.tierGroup = tier;
+                group.innerHTML = `
+                    <div class="tier-group-header">
+                        <span class="tier-group-label">
+                            <span class="tier-dot" style="background:${meta.color}"></span>
+                            ${meta.label}
+                            <span class="tier-chevron">▼</span>
+                        </span>
+                        <span class="tier-counter" id="tier-counter-${tier}"
+                              style="background:${meta.light};color:${meta.color}">
+                            ${found}/${tierItems.length}
+                        </span>
+                    </div>
+                    <div class="tier-items-list" id="tier-list-${tier}"></div>
+                `;
+
+                group.querySelector('.tier-group-header').addEventListener('click', () => {
+                    group.classList.toggle('collapsed');
+                });
+                inventoryContainer.appendChild(group);
+
+                const list = group.querySelector('.tier-items-list');
+                const knownItems = tierItems.filter(name => discoveredItems.has(name));
+
+                if (knownItems.length === 0) {
+                    const locked = document.createElement('div');
+                    locked.className = 'item-locked';
+                    locked.textContent = 'Not yet discovered';
+                    list.appendChild(locked);
+                } else {
+                    knownItems.forEach(name => {
+                        const el = document.createElement('div');
+                        el.className = 'item';
+                        el.draggable = true;
+                        el.textContent = name;
+                        el.dataset.name = name;
+                        el.dataset.tier = tier;
+                        el.dataset.source = 'inventory';
+                        list.appendChild(el);
+                    });
+                }
+            });
+        }
+
+        initInventory();
+
+        // 3. EVENTS
+        resetBtn.addEventListener('click', () => {
+            document.querySelectorAll('.board-item').forEach(item => item.remove());
+            discoveredItems = new Set(STARTING_ITEMS);
+            initInventory();
+            counterEl.textContent = 0;
+        });
+
+        document.addEventListener('click', (e) => {
+            const item = e.target.closest('.item');
+            if (!item) return;
+            const boardRect = board.getBoundingClientRect();
+            // Scatter around center with slight randomness so stacked clicks spread out
+            const cx = boardRect.width / 2 + (Math.random() - 0.5) * 120;
+            const cy = boardRect.height / 2 + (Math.random() - 0.5) * 80;
+            createBoardItem(item.dataset.name, `${cx}px`, `${cy}px`, true);
+        });
+
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('item') || e.target.classList.contains('board-item')) {
+                draggedElement = e.target;
+                e.dataTransfer.setData('text/plain', '');
+            }
+        });
+
+        document.addEventListener('dragend', () => trashZone.classList.remove('drag-over'));
+
+        board.addEventListener('dragover', e => e.preventDefault());
+
+        board.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!draggedElement) return;
+
+            const boardRect = board.getBoundingClientRect();
+            const dropX = e.clientX - boardRect.left;
+            const dropY = e.clientY - boardRect.top;
+            const targetElement = e.target.closest('.board-item');
+
+            if (targetElement && targetElement !== draggedElement) {
+                const item1 = draggedElement.dataset.name;
+                const item2 = targetElement.dataset.name;
+                const combinedKey = [item1, item2].sort().join('+');
+
+                let resultName;
+                if (CLEANED_RECIPES[combinedKey]) {
+                    resultName = CLEANED_RECIPES[combinedKey];
+                    discoveredItems.add(resultName);
+                    updateProgress();
+                } else {
+                    resultName = [item1, item2].sort()[0];
+                }
+
+                createBoardItem(resultName, targetElement.style.left, targetElement.style.top, true);
+                targetElement.remove();
+                if (draggedElement.dataset.source === 'board') draggedElement.remove();
+                return;
+            }
+
+            if (draggedElement.dataset.source === 'inventory') {
+                createBoardItem(draggedElement.dataset.name, `${dropX}px`, `${dropY}px`, false);
+            } else if (draggedElement.dataset.source === 'board') {
+                draggedElement.style.left = `${dropX}px`;
+                draggedElement.style.top = `${dropY}px`;
+            }
+        });
+
+        trashZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (draggedElement && draggedElement.dataset.source === 'board') trashZone.classList.add('drag-over');
+        });
+
+        trashZone.addEventListener('dragleave', () => trashZone.classList.remove('drag-over'));
+
+        trashZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            trashZone.classList.remove('drag-over');
+            if (draggedElement && draggedElement.dataset.source === 'board') draggedElement.remove();
+        });
+
+        function createBoardItem(name, left, top, withPop) {
+            const el = document.createElement('div');
+            el.className = 'board-item';
+            el.draggable = true;
+            el.textContent = name;
+            el.dataset.name = name;
+            el.dataset.source = 'board';
+            
+            const tier = CONCEPT_TIERS[name] || 1;
+            el.dataset.tier = tier; 
+
+            el.style.left = left;
+            el.style.top = top;
+
+            if (withPop) {
+                el.classList.add('pop');
+                el.addEventListener('animationend', () => el.classList.remove('pop'), { once: true });
+            }
+
+            el.addEventListener('dblclick', () => el.remove());
+            board.appendChild(el);
+        }
+
+        // --- TREE MODAL ---
+        treeBtn.addEventListener('click', () => {
+            renderTree();
+            modalOverlay.classList.add('active');
+        });
+
+        closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+
+        function getTierBadgeStyle(tier) {
+            const styles = {
+                1: 'background: var(--t1-light); color: var(--t1-base); border: 1px solid rgba(100,116,139,0.2);',
+                2: 'background: var(--t2-light); color: var(--t2-base); border: 1px solid rgba(2,132,199,0.2);',
+                3: 'background: var(--t3-light); color: var(--t3-base); border: 1px solid rgba(147,51,234,0.2);',
+                4: 'background: var(--t4-light); color: var(--t4-base); border: 1px solid rgba(217,119,6,0.2);'
+            };
+            return styles[tier] || styles[1];
+        }
+
+        function renderTree() {
+            treeContainer.innerHTML = '';
+            const craftedDiscoveries = Object.keys(RECIPE_PARENTS).filter(item => discoveredItems.has(item));
+
+            if (craftedDiscoveries.length === 0) {
+                treeContainer.innerHTML = `<div class="empty-tree">No insight combinations discovered yet.<br>Combine source tables on the canvas to unlock recipes!</div>`;
+                return;
+            }
+
+            craftedDiscoveries.forEach(resultItem => {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = 'tree-node';
+                
+                const resultTier = CONCEPT_TIERS[resultItem] || 1;
+                const ingredients = RECIPE_PARENTS[resultItem];
+
+                let childrenHtml = ingredients.map(ing => {
+                    const ingTier = CONCEPT_TIERS[ing] || 1;
+                    const badgeStyle = getTierBadgeStyle(ingTier);
+                    return `<li class="tree-child-item"><span>${ing}</span> <span class="tier-badge" style="${badgeStyle}">Tier ${ingTier}</span></li>`;
+                }).join('');
+
+                const parentStyle = getTierBadgeStyle(resultTier);
+
+                nodeEl.innerHTML = `
+                    <div class="tree-parent" style="${parentStyle}">${resultItem} (Tier ${resultTier})</div>
+                    <ul class="tree-children">
+                        ${childrenHtml}
+                    </ul>
+                `;
+
+                treeContainer.appendChild(nodeEl);
+            });
+        }
+    </script>
+</body>
+</html>
