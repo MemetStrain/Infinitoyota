@@ -86,32 +86,45 @@
             margin-top: 10px;
         }
 
-        .sidebar-btn {
+        /* From Uiverse.io by alexroumi (resized + recolored) */
+        .pill-btn {
             width: 100%;
-            padding: 8px;
-            background: var(--surface-white);
-            color: var(--slate-text);
-            border: 1px solid var(--border-soft);
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            box-sizing: border-box;
+            padding: 9px 16px;
+            border: unset;
+            border-radius: 10px;
+            color: #212121;
+            z-index: 1;
+            background: #e8e8e8;
+            position: relative;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 2px 5px 12px -3px rgba(0,0,0,0.2);
+            transition: all 250ms;
+            overflow: hidden;
             cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            text-align: center;
         }
 
-        #reset-btn:hover {
-            border-color: #f43f5e;
-            color: #f43f5e;
-            background: #fff1f2;
+        .pill-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            border-radius: 10px;
+            background-color: #b6f2c5;
+            z-index: -1;
+            box-shadow: 2px 5px 12px -3px rgba(0,0,0,0.2);
+            transition: all 250ms;
         }
 
-        #tree-btn {
-            background: var(--slate-text);
-            color: var(--surface-white);
-            border-color: var(--slate-text);
-        }
-        #tree-btn:hover { background: #334155; }
+        .pill-btn:hover { color: #14532d; }
+        .pill-btn:hover::before { width: 100%; }
+
+        .pill-btn.pill-btn-danger::before { background-color: #ffc9c9; }
+        .pill-btn.pill-btn-danger:hover { color: #7f1d1d; }
 
         h2 {
             margin: 0;
@@ -432,20 +445,6 @@
             line-height: 1.5;
         }
 
-        #start-game-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--t2-base);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-        #start-game-btn:hover { background: #0369a1; }
-
         /* --- TIME'S UP MODAL --- */
         #timeup-overlay {
             position: fixed;
@@ -505,32 +504,6 @@
             margin-top: 20px;
         }
 
-        #timeup-tree-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--slate-text);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #timeup-tree-btn:hover { background: #334155; }
-
-        #timeup-close-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--surface-white);
-            color: var(--slate-text);
-            border: 1px solid var(--border-soft);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        #timeup-close-btn:hover { border-color: #94a3b8; }
-
         #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
         .tree-node { margin: 12px 0; }
         
@@ -572,7 +545,7 @@
         <div id="start-card">
             <h3>Welcome to the Logic Sandbox</h3>
             <p>Combine data insights to discover new ones. Click below to start your session &mdash; this resets the workspace so every player starts fresh.</p>
-            <button id="start-game-btn">Start Game</button>
+            <button id="start-game-btn" class="pill-btn">Start Game</button>
         </div>
     </div>
 
@@ -581,8 +554,8 @@
             <p>Discovered Insights</p>
             <div class="numbers"><span id="counter">0</span> / <span id="total">0</span></div>
             <div class="btn-group">
-                <button id="tree-btn" class="sidebar-btn">Discovery Tree</button>
-                <button id="reset-btn" class="sidebar-btn">Reset Workspace</button>
+                <button id="tree-btn" class="pill-btn">Discovery Tree</button>
+                <button id="reset-btn" class="pill-btn pill-btn-danger">Reset Workspace</button>
             </div>
         </div>  
 
@@ -606,8 +579,8 @@
             <p class="timeup-subtitle">Here's what you discovered this round.</p>
             <div id="timeup-summary"></div>
             <div class="timeup-actions">
-                <button id="timeup-tree-btn">View Discovery Tree</button>
-                <button id="timeup-close-btn">Close</button>
+                <button id="timeup-tree-btn" class="pill-btn">View Discovery Tree</button>
+                <button id="timeup-close-btn" class="pill-btn">Close</button>
             </div>
         </div>
     </div>
