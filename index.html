@@ -446,6 +446,91 @@
         }
         #start-game-btn:hover { background: #0369a1; }
 
+        /* --- TIME'S UP MODAL --- */
+        #timeup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(6px);
+            z-index: 2500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        #timeup-overlay.active { opacity: 1; pointer-events: auto; }
+
+        #timeup-card {
+            background: var(--surface-white);
+            width: 440px;
+            max-width: 90vw;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.25);
+            border: 1px solid var(--border-soft);
+        }
+
+        #timeup-card h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        #timeup-card .timeup-subtitle {
+            margin: 0 0 20px 0;
+            color: var(--slate-muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .timeup-tier-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .timeup-tier-label { display: flex; align-items: center; gap: 8px; }
+
+        .timeup-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        #timeup-tree-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--slate-text);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #timeup-tree-btn:hover { background: #334155; }
+
+        #timeup-close-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--surface-white);
+            color: var(--slate-text);
+            border: 1px solid var(--border-soft);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #timeup-close-btn:hover { border-color: #94a3b8; }
+
         #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
         .tree-node { margin: 12px 0; }
         
@@ -512,6 +597,18 @@
         <div id="trash-zone">
             <span class="trash-icon">🗑️</span>
             <span>Drop here to remove</span>
+        </div>
+    </div>
+
+    <div id="timeup-overlay">
+        <div id="timeup-card">
+            <h3>Time's UP!</h3>
+            <p class="timeup-subtitle">Here's what you discovered this round.</p>
+            <div id="timeup-summary"></div>
+            <div class="timeup-actions">
+                <button id="timeup-tree-btn">View Discovery Tree</button>
+                <button id="timeup-close-btn">Close</button>
+            </div>
         </div>
     </div>
 
@@ -910,6 +1007,7 @@
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
+                    showTimeUpModal();
                 }
             };
             tick();
@@ -917,6 +1015,44 @@
         }
 
         stopTimer();
+
+        // --- TIME'S UP MODAL ---
+        const timeupOverlay = document.getElementById('timeup-overlay');
+        const timeupSummary = document.getElementById('timeup-summary');
+        const timeupTreeBtn = document.getElementById('timeup-tree-btn');
+        const timeupCloseBtn = document.getElementById('timeup-close-btn');
+
+        function showTimeUpModal() {
+            timeupSummary.innerHTML = '';
+            [1, 2, 3, 4].forEach(tier => {
+                const meta = TIER_META[tier];
+                const tierItems = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) === tier);
+                const found = tierItems.filter(name => discoveredItems.has(name)).length;
+
+                const row = document.createElement('div');
+                row.className = 'timeup-tier-row';
+                row.style.background = meta.light;
+                row.style.color = meta.color;
+                row.innerHTML = `
+                    <span class="timeup-tier-label">
+                        <span class="tier-dot" style="background:${meta.color}"></span>
+                        ${meta.label}
+                    </span>
+                    <span>${found}/${tierItems.length}</span>
+                `;
+                timeupSummary.appendChild(row);
+            });
+
+            timeupOverlay.classList.add('active');
+        }
+
+        timeupTreeBtn.addEventListener('click', () => {
+            timeupOverlay.classList.remove('active');
+            renderTree();
+            modalOverlay.classList.add('active');
+        });
+
+        timeupCloseBtn.addEventListener('click', () => timeupOverlay.classList.remove('active'));
 
         // --- START GAME MODAL ---
         const startOverlay = document.getElementById('start-overlay');
@@ -930,12 +1066,14 @@
             resetGame();
             startTimer();
             startOverlay.classList.add('hidden');
+            timeupOverlay.classList.remove('active');
         });
 
         resetBtn.addEventListener('click', () => {
             resetGame();
             stopTimer();
             startOverlay.classList.remove('hidden');
+            timeupOverlay.classList.remove('active');
         });
     </script>
 </body>
