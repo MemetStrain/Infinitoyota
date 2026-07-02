@@ -249,7 +249,7 @@
             font-style: italic;
         }
 
-        /* --- RIGHT SIDE: THE CANVAS + TRASH --- */
+        /* --- RIGHT SIDE: THE CANVAS --- */
         #board-area {
             flex-grow: 1;
             display: flex;
@@ -279,27 +279,76 @@
             pointer-events: none;
         }
 
-        #trash-zone {
-            height: 56px;
-            border-radius: 12px;
-            border: 2px dashed #cbd5e1;
-            background: #f8fafc;
+        /* --- INSTRUCTIONS BUTTON --- */
+        #instructions-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1500;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border-soft);
+            background: var(--surface-white);
+            color: var(--slate-muted);
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+            transition: all 0.15s ease;
+        }
+        #instructions-btn:hover {
+            color: var(--t2-base);
+            border-color: var(--t2-base);
+        }
+
+        #instructions-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1800;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: #94a3b8;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            user-select: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        #instructions-overlay.active { opacity: 1; pointer-events: auto; }
+
+        #instructions-card {
+            background: var(--surface-white);
+            width: 380px;
+            max-width: 90vw;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2);
+            border: 1px solid var(--border-soft);
         }
 
-        #trash-zone.drag-over {
-            border-color: #f43f5e;
-            background: #fff1f2;
-            color: #f43f5e;
+        .instructions-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-soft);
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .instructions-row .instructions-key {
+            flex-shrink: 0;
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--t2-base);
+            background: var(--t2-light);
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
         /* --- DYNAMIC TIERED PILLS ON CANVAS --- */
@@ -543,7 +592,7 @@
 
     <div id="start-overlay">
         <div id="start-card">
-            <h3>Welcome to the Logic Sandbox</h3>
+            <h3>Welcome to the InfiniToyota</h3>
             <p>Combine data insights to discover new ones. Click below to start your session &mdash; this resets the workspace so every player starts fresh.</p>
             <button id="start-game-btn" class="pill-btn">Start Game</button>
         </div>
@@ -565,11 +614,26 @@
 
     <div id="board-area">
         <div id="board">
-            <h2 id="board-title">Logic Sandbox</h2>
+            <h2 id="board-title">InfiniToyota</h2>
         </div>
-        <div id="trash-zone">
-            <span class="trash-icon">🗑️</span>
-            <span>Drop here to remove</span>
+    </div>
+
+    <button id="instructions-btn" title="How to play">?</button>
+
+    <div id="instructions-overlay">
+        <div id="instructions-card">
+            <div class="modal-header">
+                <h3>How to Play</h3>
+                <button class="close-btn" id="close-instructions">✕</button>
+            </div>
+            <div class="instructions-row">
+                <span class="instructions-key">Click</span>
+                <span>Add an insight from the sidebar onto the board.</span>
+            </div>
+            <div class="instructions-row">
+                <span class="instructions-key">Double-click</span>
+                <span>Remove an insight from the board.</span>
+            </div>
         </div>
     </div>
 
@@ -580,7 +644,7 @@
             <div id="timeup-summary"></div>
             <div class="timeup-actions">
                 <button id="timeup-tree-btn" class="pill-btn">View Discovery Tree</button>
-                <button id="timeup-close-btn" class="pill-btn">Close</button>
+                <button id="timeup-close-btn" class="pill-btn pill-btn-danger">Close</button>
             </div>
         </div>
     </div>
@@ -637,7 +701,6 @@
         // 2. SETUP & TIER MATH ENGINE
         const inventoryContainer = document.getElementById('base-items-container');
         const board = document.getElementById('board');
-        const trashZone = document.getElementById('trash-zone');
         const counterEl = document.getElementById('counter');
         const totalEl = document.getElementById('total');
         const resetBtn = document.getElementById('reset-btn');
@@ -819,8 +882,6 @@
             }
         });
 
-        document.addEventListener('dragend', () => trashZone.classList.remove('drag-over'));
-
         board.addEventListener('dragover', e => e.preventDefault());
 
         board.addEventListener('drop', (e) => {
@@ -860,19 +921,6 @@
             }
         });
 
-        trashZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (draggedElement && draggedElement.dataset.source === 'board') trashZone.classList.add('drag-over');
-        });
-
-        trashZone.addEventListener('dragleave', () => trashZone.classList.remove('drag-over'));
-
-        trashZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            trashZone.classList.remove('drag-over');
-            if (draggedElement && draggedElement.dataset.source === 'board') draggedElement.remove();
-        });
-
         function createBoardItem(name, left, top, withPop) {
             const el = document.createElement('div');
             el.className = 'board-item';
@@ -897,13 +945,33 @@
         }
 
         // --- TREE MODAL ---
+        let treeOpenedFromTimeUp = false;
+
         treeBtn.addEventListener('click', () => {
+            treeOpenedFromTimeUp = false;
             renderTree();
             modalOverlay.classList.add('active');
         });
 
-        closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
-        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+        function closeTreeModal() {
+            modalOverlay.classList.remove('active');
+            if (treeOpenedFromTimeUp) {
+                treeOpenedFromTimeUp = false;
+                timeupOverlay.classList.add('active');
+            }
+        }
+
+        closeModalBtn.addEventListener('click', closeTreeModal);
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeTreeModal(); });
+
+        // --- INSTRUCTIONS MODAL ---
+        const instructionsBtn = document.getElementById('instructions-btn');
+        const instructionsOverlay = document.getElementById('instructions-overlay');
+        const closeInstructionsBtn = document.getElementById('close-instructions');
+
+        instructionsBtn.addEventListener('click', () => instructionsOverlay.classList.add('active'));
+        closeInstructionsBtn.addEventListener('click', () => instructionsOverlay.classList.remove('active'));
+        instructionsOverlay.addEventListener('click', (e) => { if (e.target === instructionsOverlay) instructionsOverlay.classList.remove('active'); });
 
         function getTierBadgeStyle(tier) {
             const styles = {
@@ -1020,12 +1088,12 @@
         }
 
         timeupTreeBtn.addEventListener('click', () => {
+            treeOpenedFromTimeUp = true;
             timeupOverlay.classList.remove('active');
             renderTree();
             modalOverlay.classList.add('active');
         });
 
-        timeupCloseBtn.addEventListener('click', () => timeupOverlay.classList.remove('active'));
 
         // --- START GAME MODAL ---
         const startOverlay = document.getElementById('start-overlay');
@@ -1040,14 +1108,19 @@
             startTimer();
             startOverlay.classList.add('hidden');
             timeupOverlay.classList.remove('active');
+            treeOpenedFromTimeUp = false;
         });
 
-        resetBtn.addEventListener('click', () => {
+        function returnToStartScreen() {
             resetGame();
             stopTimer();
             startOverlay.classList.remove('hidden');
             timeupOverlay.classList.remove('active');
-        });
+            treeOpenedFromTimeUp = false;
+        }
+
+        resetBtn.addEventListener('click', returnToStartScreen);
+        timeupCloseBtn.addEventListener('click', returnToStartScreen);
     </script>
 </body>
 </html>
