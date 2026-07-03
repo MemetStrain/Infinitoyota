@@ -1634,8 +1634,8 @@
         // --- COUNTDOWN TIMER ---
         const timerDisplay = document.getElementById('timer-display');
         const gameTimerEl = document.getElementById('game-timer');
-        const TIMER_URGENT_MS = 10000;
-        const COUNTDOWN_MS = 60000;
+        const TIMER_URGENT_MS = 15000;
+        const COUNTDOWN_MS = 90000;
         let timerInterval = null;
         let countdownEndTime = null;
 
@@ -1688,12 +1688,33 @@
         function computeGameResult() {
             const foundInsights = [...discoveredItems].filter(name => (CONCEPT_TIERS[name] || 1) > 1).length;
             const totalInsights = DERIVED_INSIGHTS_ONLY.length;
+            
             // Duration = seconds from game start until the last insight was found
             const durationSeconds = (gameStartTime && lastDiscoveryTime)
                 ? (lastDiscoveryTime - gameStartTime) / 1000
                 : 0;
-            const score = Math.round((foundInsights / totalInsights) * 100 * durationSeconds);
-            return { foundInsights, totalInsights, durationSeconds, score };
+
+            // Option B: Countdown Time Bonus Model
+            // 1. Set your maximum expected game duration (e.g., 300 seconds / 5 minutes)
+            const MAX_GAME_TIME = 300; 
+
+            // 2. Base score rewards completion percentage (up to 5,000 points)
+            const baseScore = (totalInsights > 0) ? (foundInsights / totalInsights) * 5000 : 0;
+
+            // 3. Time bonus rewards speed: 10 points for every second saved under MAX_GAME_TIME
+            const timeBonus = Math.max(0, MAX_GAME_TIME - durationSeconds) * 10;
+
+            // 4. Final score is the sum of both (rounded to nearest integer)
+            const score = Math.round(baseScore + timeBonus);
+
+            return { 
+                foundInsights, 
+                totalInsights, 
+                durationSeconds, 
+                score,
+                baseScore: Math.round(baseScore),
+                timeBonus: Math.round(timeBonus)
+            };
         }
 
         async function submitScore(result) {
