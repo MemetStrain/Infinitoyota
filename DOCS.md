@@ -36,13 +36,15 @@ Players drag/click "insight" cards onto a board and combine pairs of them to dis
 
 | Section | HTML id | Controlling JS |
 |---|---|---|
-| Floating countdown timer | `#game-timer` / `#timer-display` | `startTimer()`, `stopTimer()`, `formatTime()` — ~1021-1056 |
-| Start Game gate | `#start-overlay`, `#start-game-btn` | `startGameBtn` click handler — ~1102 |
-| Sidebar (inventory + stats) | `#inventory`, `#base-items-container` | `initInventory()` ~805, `updateProgress()` ~772 |
-| Board (drag/drop canvas) | `#board` | `board` drop/dragover listeners — ~885-922, `createBoardItem()` ~924 |
-| Instructions ("?" button) | `#instructions-btn`, `#instructions-overlay` | ~967-974 |
-| Discovery Tree modal | `#modal-overlay`, `#tree-container` | `renderTree()` ~986, `getTierBadgeStyle()` ~976 |
-| Time's Up modal | `#timeup-overlay`, `#timeup-summary` | `showTimeUpModal()` ~1066 |
+| Floating countdown timer | `#game-timer` / `#timer-display` | `startTimer()`, `stopTimer()`, `formatTime()` |
+| Start Game gate (with name input) | `#start-overlay`, `#start-game-btn`, `#player-name-input` | `startGameBtn` click handler |
+| Sidebar (inventory + stats) | `#inventory`, `#base-items-container` | `initInventory()`, `updateProgress()` |
+| Board (drag/drop canvas) | `#board` | `board` drop/dragover listeners, `createBoardItem()` |
+| Clue chat bubble (bottom-left of board) | `#clue-bubble`, `#clue-text` | `showClue()`, `hideClue()`, `pickClueIngredient()` |
+| Instructions ("?" button) | `#instructions-btn`, `#instructions-overlay` | inline listeners |
+| Discovery Tree modal | `#modal-overlay`, `#tree-container` | `renderTree()`, `getTierBadgeStyle()` |
+| Time's Up modal (with score) | `#timeup-overlay`, `#timeup-summary`, `#timeup-score` | `showTimeUpModal()`, `computeGameResult()`, `submitScore()` |
+| Leaderboard modal | `#leaderboard-overlay`, `#leaderboard-container` | `renderLeaderboard()`, `closeLeaderboardModal()` |
 
 ## 5. Core gameplay loop
 
@@ -65,13 +67,22 @@ If a player opens the Discovery Tree **from the Time's Up popup**, closing the t
 
 **Gotcha:** every interactive element must have a unique `id`. `document.getElementById()` silently returns only the *first* match in the DOM if two elements share an id — this caused the "Close button does nothing" bug earlier, when the Time's Up close button was accidentally given the same id as the sidebar's Reset button.
 
-## 7. Where to hook in a hint/clue feature
+## 7. Clue feature
 
-For "show a hint after 3 failed combine attempts," the natural insertion point is the **no-match branch** of the board's `drop` handler (~906, the `else` where `resultName = [item1, item2].sort()[0]`). That's the only place a "failed" combination is currently detected — right now it's silent.
+After **3 failed combine attempts** (the no-match branch of the board's `drop` handler), a chat bubble pops up from the bottom-left of the board with a hint in the form `"A + ? = New Insight"`.
 
-Suggested approach:
-1. Add a counter, e.g. `let failedAttempts = 0;` near the other game-state variables (~712).
-2. Increment it in the `else` branch of the drop handler when a combo has no recipe match.
-3. Reset it to `0` on any successful match (the `if (CLEANED_RECIPES[combinedKey])` branch, ~902) and in `resetGame()` (~861).
-4. When it hits 3, trigger a hint UI (e.g. reuse the modal pattern from `#instructions-overlay` or `#timeup-overlay` for a `#hint-overlay`) and reset the counter so it can fire again after another 3 fails.
-5. For *what* to hint: `RECIPE_PARENTS` (~752) already maps every undiscovered result back to its two ingredients — you can filter `ALL_UNIQUE` for items not yet in `discoveredItems` whose two `RECIPE_PARENTS` ingredients *are* both in `discoveredItems`, i.e. "things the player could make right now but hasn't." That list is your hint pool.
+- `failedAttempts` increments on each no-recipe merge; a successful match, `resetGame()`, or the clue firing resets it to 0 (so it fires again after 3 more fails).
+- `pickClueIngredient()` builds the hint pool: recipes whose result is undiscovered but whose two ingredients are **both** already unlocked ("things you could make right now"). It picks a random such recipe, then reveals a random one of its two ingredients as `A`.
+- The bubble (`#clue-bubble`) auto-hides after 8s (`CLUE_VISIBLE_MS`) or immediately on a successful combine. `FAILS_BEFORE_CLUE` controls the threshold.
+- If nothing is craftable right now, no clue is shown (the fail counter still resets).
+
+## 8. Leaderboard (Firebase)
+
+Ranks players by **score = (insights found ÷ total insights) × 100 × duration**, where *duration* is the seconds from game start to the **last insight discovered** (`gameStartTime` / `lastDiscoveryTime`). Computed in `computeGameResult()` when time runs out.
+
+- **Name capture:** `#player-name-input` on the Start card is required (red border if empty); stored in `playerName`.
+- **Storage:** Firestore collection `leaderboard`, one doc per finished round: `{ name, insightsFound, time, score, createdAt (serverTimestamp) }`. Written by `submitScore()` from `showTimeUpModal()`.
+- **Display:** top-10 by `score` desc, via the sidebar "Leaderboard" button or "View Leaderboard" on the Time's Up modal (the latter returns to the Time's Up popup on close — same stacking pattern as §6). Player names are inserted with `textContent`, never `innerHTML`.
+- **Backend seam:** a separate `<script type="module">` at the bottom of the file loads the Firebase SDK from the CDN and exposes `window.leaderboardDB = { isConfigured, addScore, getTopScores }` to the main (non-module) game script. All game code checks `window.leaderboardDB?.isConfigured` and degrades gracefully (offline notices) when Firebase isn't set up.
+
+**To activate:** replace the placeholder `firebaseConfig` in that module script with your project's config (Firebase Console → Project settings → Your apps), create a Firestore database, and allow read/create on the `leaderboard` collection in your security rules.

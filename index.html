@@ -553,6 +553,177 @@
             margin-top: 20px;
         }
 
+        .timeup-score-box {
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            background: var(--t2-light);
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            margin-top: 12px;
+        }
+
+        .timeup-score-box .timeup-score-label {
+            margin: 0 0 2px 0;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--t2-base);
+            font-weight: 700;
+        }
+
+        .timeup-score-box .timeup-score-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--t2-base);
+        }
+
+        #lb-save-status {
+            margin: 8px 0 0 0;
+            font-size: 0.72rem;
+            color: var(--slate-muted);
+            text-align: center;
+        }
+
+        /* --- CLUE CHAT BUBBLE --- */
+        #clue-bubble {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            max-width: 300px;
+            background: var(--surface-white);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            padding: 12px 16px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+            z-index: 500;
+            transform: scale(0) translateY(20px);
+            transform-origin: bottom left;
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            pointer-events: none;
+        }
+
+        #clue-bubble.show {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #clue-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 12px;
+            width: 0;
+            height: 0;
+            border-left: 0 solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 10px solid var(--surface-white);
+            filter: drop-shadow(0 2px 1px rgba(15, 23, 42, 0.06));
+        }
+
+        #clue-bubble .clue-title {
+            margin: 0 0 4px 0;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--t4-base);
+            font-weight: 800;
+        }
+
+        #clue-bubble .clue-text {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--slate-text);
+        }
+
+        /* --- LEADERBOARD MODAL --- */
+        #leaderboard-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        #leaderboard-overlay.active { opacity: 1; pointer-events: auto; }
+
+        #leaderboard-card {
+            background: var(--surface-white);
+            width: 520px;
+            max-width: 90vw; max-height: 80vh;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2);
+            border: 1px solid var(--border-soft);
+            display: flex; flex-direction: column;
+        }
+
+        #leaderboard-container { overflow-y: auto; flex-grow: 1; }
+
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .lb-table th {
+            text-align: left;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--slate-muted);
+            padding: 6px 10px;
+            border-bottom: 2px solid var(--border-soft);
+        }
+
+        .lb-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--border-soft);
+            font-weight: 600;
+        }
+
+        .lb-table tr:last-child td { border-bottom: none; }
+
+        .lb-table .lb-rank { color: var(--slate-muted); font-weight: 800; width: 32px; }
+        .lb-table tr:first-child .lb-rank { color: var(--t4-base); }
+        .lb-table .lb-score { color: var(--t2-base); font-weight: 800; text-align: right; }
+
+        /* --- PLAYER NAME INPUT (Start card) --- */
+        #player-name-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px 14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-soft);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--slate-text);
+            background: var(--bg-canvas);
+            outline: none;
+            text-align: center;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        #player-name-input:focus {
+            border-color: var(--t2-base);
+            box-shadow: 0 0 0 3px var(--t2-light);
+            background: var(--surface-white);
+        }
+
+        #player-name-input.input-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px #fee2e2;
+        }
+
         #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
         .tree-node { margin: 12px 0; }
         
@@ -593,7 +764,8 @@
     <div id="start-overlay">
         <div id="start-card">
             <h3>Welcome to the InfiniToyota</h3>
-            <p>Combine data insights to discover new ones. Click below to start your session &mdash; this resets the workspace so every player starts fresh.</p>
+            <p>Combine data insights to discover new ones. Enter your name and click below to start your session &mdash; this resets the workspace so every player starts fresh.</p>
+            <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
             <button id="start-game-btn" class="pill-btn">Start Game</button>
         </div>
     </div>
@@ -604,6 +776,7 @@
             <div class="numbers"><span id="counter">0</span> / <span id="total">0</span></div>
             <div class="btn-group">
                 <button id="tree-btn" class="pill-btn">Discovery Tree</button>
+                <button id="leaderboard-btn" class="pill-btn">Leaderboard</button>
                 <button id="reset-btn" class="pill-btn pill-btn-danger">Reset Workspace</button>
             </div>
         </div>  
@@ -615,6 +788,10 @@
     <div id="board-area">
         <div id="board">
             <h2 id="board-title">InfiniToyota</h2>
+            <div id="clue-bubble">
+                <p class="clue-title">💡 Clue</p>
+                <div class="clue-text" id="clue-text"></div>
+            </div>
         </div>
     </div>
 
@@ -642,7 +819,13 @@
             <h3>Time's UP!</h3>
             <p class="timeup-subtitle">Here's what you discovered this round.</p>
             <div id="timeup-summary"></div>
+            <div class="timeup-score-box">
+                <p class="timeup-score-label">Your Score</p>
+                <div class="timeup-score-value" id="timeup-score">0</div>
+                <p id="lb-save-status"></p>
+            </div>
             <div class="timeup-actions">
+                <button id="timeup-leaderboard-btn" class="pill-btn">View Leaderboard</button>
                 <button id="timeup-tree-btn" class="pill-btn">View Discovery Tree</button>
                 <button id="timeup-close-btn" class="pill-btn pill-btn-danger">Close</button>
             </div>
@@ -656,6 +839,16 @@
                 <button class="close-btn" id="close-modal">✕</button>
             </div>
             <div id="tree-container"></div>
+        </div>
+    </div>
+
+    <div id="leaderboard-overlay">
+        <div id="leaderboard-card">
+            <div class="modal-header">
+                <h3>🏆 Leaderboard</h3>
+                <button class="close-btn" id="close-leaderboard">✕</button>
+            </div>
+            <div id="leaderboard-container"></div>
         </div>
     </div>
 
@@ -711,6 +904,10 @@
 
         let draggedElement = null;
         let discoveredItems = new Set(STARTING_ITEMS);
+        let failedAttempts = 0;
+        let playerName = 'Anonymous';
+        let gameStartTime = null;
+        let lastDiscoveryTime = null;
 
         const CLEANED_RECIPES = {};
         Object.keys(RECIPES).forEach(key => {
@@ -857,10 +1054,53 @@
 
         initInventory();
 
+        // --- CLUE CHAT BUBBLE ---
+        const clueBubble = document.getElementById('clue-bubble');
+        const clueText = document.getElementById('clue-text');
+        const FAILS_BEFORE_CLUE = 3;
+        const CLUE_VISIBLE_MS = 8000;
+        let clueHideTimeout = null;
+
+        function pickClueIngredient() {
+            // Recipes the player could make right now but hasn't: result is
+            // undiscovered while both ingredients are already unlocked.
+            const craftableNow = Object.keys(RECIPE_PARENTS).filter(result =>
+                !discoveredItems.has(result) &&
+                RECIPE_PARENTS[result].every(ing => discoveredItems.has(ing))
+            );
+            if (craftableNow.length === 0) return null;
+
+            const result = craftableNow[Math.floor(Math.random() * craftableNow.length)];
+            const ingredients = RECIPE_PARENTS[result];
+            return ingredients[Math.floor(Math.random() * ingredients.length)];
+        }
+
+        function showClue() {
+            const knownIngredient = pickClueIngredient();
+            if (!knownIngredient) return;
+
+            clueText.textContent = `${knownIngredient} + ? = New Insight`;
+            clueBubble.classList.remove('show');
+            // Force a reflow so re-triggering replays the pop animation
+            void clueBubble.offsetWidth;
+            clueBubble.classList.add('show');
+
+            if (clueHideTimeout) clearTimeout(clueHideTimeout);
+            clueHideTimeout = setTimeout(hideClue, CLUE_VISIBLE_MS);
+        }
+
+        function hideClue() {
+            clueBubble.classList.remove('show');
+            if (clueHideTimeout) clearTimeout(clueHideTimeout);
+            clueHideTimeout = null;
+        }
+
         // 3. EVENTS
         function resetGame() {
             document.querySelectorAll('.board-item').forEach(item => item.remove());
             discoveredItems = new Set(STARTING_ITEMS);
+            failedAttempts = 0;
+            hideClue();
             initInventory();
             counterEl.textContent = 0;
         }
@@ -901,10 +1141,20 @@
                 let resultName;
                 if (CLEANED_RECIPES[combinedKey]) {
                     resultName = CLEANED_RECIPES[combinedKey];
-                    discoveredItems.add(resultName);
+                    if (!discoveredItems.has(resultName)) {
+                        discoveredItems.add(resultName);
+                        lastDiscoveryTime = Date.now();
+                    }
+                    failedAttempts = 0;
+                    hideClue();
                     updateProgress();
                 } else {
                     resultName = [item1, item2].sort()[0];
+                    failedAttempts++;
+                    if (failedAttempts >= FAILS_BEFORE_CLUE) {
+                        failedAttempts = 0;
+                        showClue();
+                    }
                 }
 
                 createBoardItem(resultName, targetElement.style.left, targetElement.style.top, true);
@@ -1063,6 +1313,40 @@
         const timeupTreeBtn = document.getElementById('timeup-tree-btn');
         const timeupCloseBtn = document.getElementById('timeup-close-btn');
 
+        const timeupScoreEl = document.getElementById('timeup-score');
+        const lbSaveStatusEl = document.getElementById('lb-save-status');
+
+        function computeGameResult() {
+            const foundInsights = [...discoveredItems].filter(name => (CONCEPT_TIERS[name] || 1) > 1).length;
+            const totalInsights = DERIVED_INSIGHTS_ONLY.length;
+            // Duration = seconds from game start until the last insight was found
+            const durationSeconds = (gameStartTime && lastDiscoveryTime)
+                ? (lastDiscoveryTime - gameStartTime) / 1000
+                : 0;
+            const score = Math.round((foundInsights / totalInsights) * 100 * durationSeconds);
+            return { foundInsights, totalInsights, durationSeconds, score };
+        }
+
+        async function submitScore(result) {
+            if (!window.leaderboardDB || !window.leaderboardDB.isConfigured) {
+                lbSaveStatusEl.textContent = 'Leaderboard offline — Firebase not configured.';
+                return;
+            }
+            lbSaveStatusEl.textContent = 'Saving score…';
+            try {
+                await window.leaderboardDB.addScore({
+                    name: playerName,
+                    insightsFound: result.foundInsights,
+                    time: Math.round(result.durationSeconds * 10) / 10,
+                    score: result.score
+                });
+                lbSaveStatusEl.textContent = 'Score saved to the leaderboard!';
+            } catch (err) {
+                console.error('Failed to save score:', err);
+                lbSaveStatusEl.textContent = 'Could not save score — check your connection.';
+            }
+        }
+
         function showTimeUpModal() {
             timeupSummary.innerHTML = '';
             [1, 2, 3, 4].forEach(tier => {
@@ -1084,6 +1368,10 @@
                 timeupSummary.appendChild(row);
             });
 
+            const result = computeGameResult();
+            timeupScoreEl.textContent = result.score.toLocaleString();
+            submitScore(result);
+
             timeupOverlay.classList.add('active');
         }
 
@@ -1094,17 +1382,123 @@
             modalOverlay.classList.add('active');
         });
 
+        // --- LEADERBOARD MODAL ---
+        const leaderboardBtn = document.getElementById('leaderboard-btn');
+        const leaderboardOverlay = document.getElementById('leaderboard-overlay');
+        const leaderboardContainer = document.getElementById('leaderboard-container');
+        const closeLeaderboardBtn = document.getElementById('close-leaderboard');
+        const timeupLeaderboardBtn = document.getElementById('timeup-leaderboard-btn');
+        let leaderboardOpenedFromTimeUp = false;
+
+        function leaderboardMessage(text) {
+            leaderboardContainer.innerHTML = '';
+            const msg = document.createElement('div');
+            msg.className = 'empty-tree';
+            msg.textContent = text;
+            leaderboardContainer.appendChild(msg);
+        }
+
+        async function renderLeaderboard() {
+            if (!window.leaderboardDB || !window.leaderboardDB.isConfigured) {
+                leaderboardMessage('Leaderboard unavailable — Firebase is not configured yet.');
+                return;
+            }
+            leaderboardMessage('Loading scores…');
+
+            let entries;
+            try {
+                entries = await window.leaderboardDB.getTopScores(10);
+            } catch (err) {
+                console.error('Failed to load leaderboard:', err);
+                leaderboardMessage('Could not load the leaderboard — check your connection.');
+                return;
+            }
+
+            if (entries.length === 0) {
+                leaderboardMessage('No scores yet. Be the first on the board!');
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'lb-table';
+            table.innerHTML = `
+                <thead>
+                    <tr><th>#</th><th>Player</th><th>Insights</th><th>Time</th><th style="text-align:right">Score</th></tr>
+                </thead>
+            `;
+            const tbody = document.createElement('tbody');
+
+            entries.forEach((entry, i) => {
+                const tr = document.createElement('tr');
+                const cells = [
+                    { cls: 'lb-rank', text: `${i + 1}` },
+                    { cls: 'lb-name', text: entry.name || 'Anonymous' },
+                    { cls: 'lb-insights', text: `${entry.insightsFound ?? 0}` },
+                    { cls: 'lb-time', text: `${(entry.time ?? 0).toFixed(1)}s` },
+                    { cls: 'lb-score', text: (entry.score ?? 0).toLocaleString() }
+                ];
+                cells.forEach(({ cls, text }) => {
+                    const td = document.createElement('td');
+                    td.className = cls;
+                    td.textContent = text; // textContent keeps player names from injecting HTML
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            leaderboardContainer.innerHTML = '';
+            leaderboardContainer.appendChild(table);
+        }
+
+        function closeLeaderboardModal() {
+            leaderboardOverlay.classList.remove('active');
+            if (leaderboardOpenedFromTimeUp) {
+                leaderboardOpenedFromTimeUp = false;
+                timeupOverlay.classList.add('active');
+            }
+        }
+
+        leaderboardBtn.addEventListener('click', () => {
+            leaderboardOpenedFromTimeUp = false;
+            leaderboardOverlay.classList.add('active');
+            renderLeaderboard();
+        });
+
+        timeupLeaderboardBtn.addEventListener('click', () => {
+            leaderboardOpenedFromTimeUp = true;
+            timeupOverlay.classList.remove('active');
+            leaderboardOverlay.classList.add('active');
+            renderLeaderboard();
+        });
+
+        closeLeaderboardBtn.addEventListener('click', closeLeaderboardModal);
+        leaderboardOverlay.addEventListener('click', (e) => { if (e.target === leaderboardOverlay) closeLeaderboardModal(); });
 
         // --- START GAME MODAL ---
         const startOverlay = document.getElementById('start-overlay');
         const startGameBtn = document.getElementById('start-game-btn');
+        const playerNameInput = document.getElementById('player-name-input');
+
+        playerNameInput.addEventListener('input', () => playerNameInput.classList.remove('input-error'));
+        playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') startGameBtn.click(); });
 
         startGameBtn.addEventListener('click', () => {
+            const nameValue = playerNameInput.value.trim();
+            if (!nameValue) {
+                playerNameInput.classList.add('input-error');
+                playerNameInput.focus();
+                return;
+            }
+            playerName = nameValue;
+
             // Refresh cache so no state leaks between players
             localStorage.clear();
             sessionStorage.clear();
 
             resetGame();
+            gameStartTime = Date.now();
+            lastDiscoveryTime = null;
             startTimer();
             startOverlay.classList.add('hidden');
             timeupOverlay.classList.remove('active');
@@ -1114,13 +1508,62 @@
         function returnToStartScreen() {
             resetGame();
             stopTimer();
+            playerNameInput.value = '';
             startOverlay.classList.remove('hidden');
             timeupOverlay.classList.remove('active');
             treeOpenedFromTimeUp = false;
+            leaderboardOpenedFromTimeUp = false;
         }
 
         resetBtn.addEventListener('click', returnToStartScreen);
         timeupCloseBtn.addEventListener('click', returnToStartScreen);
+    </script>
+
+    <!-- FIREBASE LEADERBOARD BACKEND -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, getDocs,
+            query, orderBy, limit, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // TODO: Replace with your project's config from
+        // Firebase Console → Project settings → Your apps → SDK setup and configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPxVN6yMOJhXsOdboRPl5lP3rcPpL3DUM",
+            authDomain: "infinitoyota.firebaseapp.com",
+            projectId: "infinitoyota",
+            storageBucket: "infinitoyota.firebasestorage.app",
+            messagingSenderId: "546213166172",
+            appId: "1:546213166172:web:128b8e529241fec30d7a99"
+        };
+
+        const isConfigured = !firebaseConfig.apiKey.startsWith("YOUR_");
+        const db = isConfigured ? getFirestore(initializeApp(firebaseConfig)) : null;
+
+        // Exposed on window so the main (non-module) game script can call it
+        window.leaderboardDB = {
+            isConfigured,
+
+            async addScore(entry) {
+                await addDoc(collection(db, "leaderboard"), {
+                    name: entry.name,
+                    insightsFound: entry.insightsFound,
+                    time: entry.time,
+                    score: entry.score,
+                    createdAt: serverTimestamp()
+                });
+            },
+
+            async getTopScores(count = 10) {
+                const snap = await getDocs(query(
+                    collection(db, "leaderboard"),
+                    orderBy("score", "desc"),
+                    limit(count)
+                ));
+                return snap.docs.map(doc => doc.data());
+            }
+        };
     </script>
 </body>
 </html>
