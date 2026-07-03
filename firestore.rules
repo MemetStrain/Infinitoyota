@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Security model for the InfiniToyota leaderboard.
+//
+// The Firebase *web* API key in index.html is NOT a secret — it only
+// identifies the project. Data access is controlled entirely by these rules.
+//
+//   read          : public (the leaderboard is meant to be viewed by anyone)
+//   create        : allowed only for a well-formed score document
+//   update/delete : denied (scores are immutable once written)
+//
+// Combined with Firebase App Check (enforced on Cloud Firestore), only the
+// real site can submit scores; bots/curl without a valid App Check token are
+// rejected before these rules even run.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /leaderboard/{doc} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasOnly(['name', 'insightsFound', 'time', 'score', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 30
+        // `is number` (not `is int`): the JS SDK may serialize whole numbers as
+        // doubles, so `is int` would false-reject legitimate writes.
+        && request.resource.data.insightsFound is number
+        && request.resource.data.insightsFound >= 0
+        && request.resource.data.insightsFound <= 100
+        && request.resource.data.time is number
+        && request.resource.data.time >= 0
+        && request.resource.data.score is number
+        && request.resource.data.score >= 0
+        // Forces the server timestamp and blocks back-dating.
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+  }
+}

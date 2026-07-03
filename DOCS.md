@@ -88,4 +88,16 @@ Ranks players by **score = (insights found ÷ total insights) × 100 × duration
 - **Display:** top-10 by `score` desc, via the sidebar "Leaderboard" button or "View Leaderboard" on the Time's Up modal (the latter returns to the Time's Up popup on close — same stacking pattern as §6). Player names are inserted with `textContent`, never `innerHTML`.
 - **Backend seam:** a separate `<script type="module">` at the bottom of the file loads the Firebase SDK from the CDN and exposes `window.leaderboardDB = { isConfigured, addScore, getTopScores }` to the main (non-module) game script. All game code checks `window.leaderboardDB?.isConfigured` and degrades gracefully (offline notices) when Firebase isn't set up.
 
-**To activate:** replace the placeholder `firebaseConfig` in that module script with your project's config (Firebase Console → Project settings → Your apps), create a Firestore database, and allow read/create on the `leaderboard` collection in your security rules.
+**To activate:** replace the placeholder `firebaseConfig` in that module script with your project's config (Firebase Console → Project settings → Your apps), create a Firestore database, and publish [`firestore.rules`](firestore.rules) (see below).
+
+## 9. Security model (public deploy)
+
+The `firebaseConfig` (including `apiKey`) is committed to the repo **on purpose**. A Firebase *web* API key is **not a secret** — it only identifies the project to Google and grants no data access. Google documents that embedding it in client code is expected. Hiding or rotating it does essentially nothing for security. The real protection is three layers, none of which involve keeping the key private:
+
+1. **Firestore Security Rules** — [`firestore.rules`](firestore.rules) is the source of truth. Public `read` (the leaderboard is meant to be seen), validated **create-only** (payload must be exactly `{ name, insightsFound, time, score, createdAt }` with sane types/bounds and `createdAt == request.time`), and `update`/`delete` **denied** so scores are immutable. Publish via Firebase Console → Firestore → Rules (paste), or `firebase deploy --only firestore:rules`. **Without these rules, anyone can read/overwrite/wipe the collection via a plain REST call — that, not the key, is the real risk.**
+
+2. **App Check (reCAPTCHA v3)** — the module script calls `initializeAppCheck()` so Firestore requests must carry a valid App Check token; bots/curl are rejected. Setup: Firebase Console → App Check → register the web app with reCAPTCHA v3, put the **site key** in `RECAPTCHA_V3_SITE_KEY` (public, safe), keep the **secret** in the console, then **enforce** App Check for Cloud Firestore *after* verifying real plays still work. For local dev, uncomment `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;` to get a debug token to register for `localhost` (keep it commented out in production).
+
+3. **API key HTTP-referrer restriction** — Google Cloud Console → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers: add `https://<project>.vercel.app/*`, any custom domain, and `http://localhost:*/*`. This makes the exposed key unusable from any other origin.
+
+Deploy hygiene: [`.gitignore`](.gitignore) blocks real secrets (service-account JSON, `.env`) from ever landing in git; [`vercel.json`](vercel.json) sets basic security headers. Note the current key already exists in git history — that's fine given the three layers above; rotating/scrubbing is optional, not required.

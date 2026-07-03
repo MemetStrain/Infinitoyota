@@ -1,0 +1,15 @@
+# Secrets — never commit these
+.env
+.env.*
+*serviceAccount*.json
+*service-account*.json
+
+# Firebase / Vercel local artifacts
+firebase-debug.log
+.firebase/
+.vercel
+
+# Dependencies / OS cruft
+node_modules/
+.DS_Store
+Thumbs.db

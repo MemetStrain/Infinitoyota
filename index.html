@@ -1804,13 +1804,16 @@
     <!-- FIREBASE LEADERBOARD BACKEND -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
         import {
             getFirestore, collection, addDoc, getDocs,
             query, orderBy, limit, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // TODO: Replace with your project's config from
-        // Firebase Console → Project settings → Your apps → SDK setup and configuration
+        // The web API key below is NOT a secret — it only identifies this project.
+        // Data access is controlled by Firestore Security Rules (see firestore.rules)
+        // and App Check, not by keeping this config private.
+        // From: Firebase Console → Project settings → Your apps → SDK setup and configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBPxVN6yMOJhXsOdboRPl5lP3rcPpL3DUM",
             authDomain: "infinitoyota.firebaseapp.com",
@@ -1820,8 +1823,32 @@
             appId: "1:546213166172:web:128b8e529241fec30d7a99"
         };
 
+        // For LOCAL DEV only: uncomment to print an App Check debug token to the
+        // console, then register it in Firebase Console → App Check. Keep this
+        // commented out (or removed) in production.
+        // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+        // reCAPTCHA v3 site key from Firebase Console → App Check (public, safe to embed).
+        const RECAPTCHA_V3_SITE_KEY = "YOUR_RECAPTCHA_V3_SITE_KEY";
+
         const isConfigured = !firebaseConfig.apiKey.startsWith("YOUR_");
-        const db = isConfigured ? getFirestore(initializeApp(firebaseConfig)) : null;
+        let db = null;
+        if (isConfigured) {
+            const app = initializeApp(firebaseConfig);
+            // App Check blocks Firestore requests that lack a valid token (bots/curl).
+            // Wrapped so a misconfig degrades to a leaderboard error, not a dead module.
+            try {
+                if (!RECAPTCHA_V3_SITE_KEY.startsWith("YOUR_")) {
+                    initializeAppCheck(app, {
+                        provider: new ReCaptchaV3Provider(RECAPTCHA_V3_SITE_KEY),
+                        isTokenAutoRefresh: true
+                    });
+                }
+            } catch (e) {
+                console.warn("App Check init failed:", e);
+            }
+            db = getFirestore(app);
+        }
 
         // Exposed on window so the main (non-module) game script can call it
         window.leaderboardDB = {
