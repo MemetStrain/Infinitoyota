@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Canvas Studio</title>
+    <title>InfiniToyota</title>
     <link rel="icon" type="image/png" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-canvas: #f0f4f8;
@@ -13,10 +16,16 @@
             --slate-muted: #64748b;
             --border-soft: #e2e8f0;
 
+            /* TOYOTA BRAND */
+            --toyota-red: #EB0A1E;
+            --toyota-red-dark: #B8081A;
+            --toyota-red-light: #FDE8EA;
+            --toyota-black: #101010;
+
             /* TIER COLOR PALETTES */
             --t1-base: #64748b;   /* Slate Gray */
             --t1-light: #f1f5f9;
-            
+
             --t2-base: #0284c7;   /* Sky Blue */
             --t2-light: #e0f2fe;
 
@@ -28,15 +37,55 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
-            gap: 20px;
-            padding: 20px;
+            flex-direction: column;
+            gap: 14px;
+            padding: 16px 20px 20px;
             background-color: var(--bg-canvas);
             margin: 0;
             height: 100vh;
             box-sizing: border-box;
             color: var(--slate-text);
+        }
+
+        /* --- BRAND HEADER --- */
+        #app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        #brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #brand-mark img {
+            height: 34px;
+            width: 34px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        #brand-mark .brand-text {
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: -0.3px;
+            color: var(--toyota-black);
+        }
+
+        #brand-mark .brand-text .brand-accent {
+            color: var(--toyota-red);
+        }
+
+        #main-row {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
         }
 
         /* --- LEFT SIDEBAR: THE CATALOG --- */
@@ -76,7 +125,23 @@
         .stats-box .numbers {
             font-size: 1.4rem;
             font-weight: 800;
-            color: var(--t2-base);
+            color: var(--toyota-red);
+        }
+
+        #progress-track {
+            margin-top: 8px;
+            height: 8px;
+            border-radius: 50px;
+            background: var(--border-soft);
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--toyota-red), var(--toyota-red-dark));
+            transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
         }
 
         .btn-group {
@@ -86,45 +151,41 @@
             margin-top: 10px;
         }
 
-        /* From Uiverse.io by alexroumi (resized + recolored) */
+        /* --- TOYOTA BUTTON SYSTEM --- */
         .pill-btn {
             width: 100%;
             box-sizing: border-box;
-            padding: 9px 16px;
-            border: unset;
-            border-radius: 10px;
-            color: #212121;
-            z-index: 1;
-            background: #e8e8e8;
-            position: relative;
-            font-weight: 700;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            background: var(--toyota-red);
+            font-weight: 800;
             font-size: 13px;
-            box-shadow: 2px 5px 12px -3px rgba(0,0,0,0.2);
-            transition: all 250ms;
-            overflow: hidden;
+            letter-spacing: 0.2px;
+            box-shadow: 0 4px 0 var(--toyota-red-dark), 0 8px 16px -6px rgba(235, 10, 30, 0.4);
+            transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
             cursor: pointer;
             text-align: center;
         }
 
-        .pill-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0;
-            border-radius: 10px;
-            background-color: #b6f2c5;
-            z-index: -1;
-            box-shadow: 2px 5px 12px -3px rgba(0,0,0,0.2);
-            transition: all 250ms;
+        .pill-btn:hover { background: var(--toyota-red-dark); }
+        .pill-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 var(--toyota-red-dark), 0 2px 6px -2px rgba(235, 10, 30, 0.4);
         }
 
-        .pill-btn:hover { color: #14532d; }
-        .pill-btn:hover::before { width: 100%; }
-
-        .pill-btn.pill-btn-danger::before { background-color: #ffc9c9; }
-        .pill-btn.pill-btn-danger:hover { color: #7f1d1d; }
+        .pill-btn.pill-btn-danger {
+            color: var(--toyota-red);
+            background: var(--surface-white);
+            border: 2px solid var(--toyota-red);
+            box-shadow: 0 4px 0 var(--border-soft), 0 8px 16px -8px rgba(15, 23, 42, 0.15);
+        }
+        .pill-btn.pill-btn-danger:hover { color: #fff; background: var(--toyota-red); }
+        .pill-btn.pill-btn-danger:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 var(--border-soft), 0 2px 6px -2px rgba(15, 23, 42, 0.15);
+        }
 
         h2 {
             margin: 0;
@@ -217,10 +278,10 @@
             transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s;
         }
 
-        .item[data-tier="1"] { background: rgba(100, 116, 139, 0.08); border-left: 1px solid var(--border-soft); }
-        .item[data-tier="2"] { background: rgba(2, 132, 199, 0.08); border-left: 1px solid var(--border-soft); }
-        .item[data-tier="3"] { background: rgba(147, 51, 234, 0.08); border-left: 1px solid var(--border-soft); }
-        .item[data-tier="4"] { background: rgba(217, 119, 6, 0.08); border-left: 1px solid var(--border-soft); }
+        .item[data-tier="1"] { background: rgba(100, 116, 139, 0.08); border-left: 3px solid var(--t1-base); }
+        .item[data-tier="2"] { background: rgba(2, 132, 199, 0.08); border-left: 3px solid var(--t2-base); }
+        .item[data-tier="3"] { background: rgba(147, 51, 234, 0.08); border-left: 3px solid var(--t3-base); }
+        .item[data-tier="4"] { background: rgba(217, 119, 6, 0.08); border-left: 3px solid var(--t4-base); }
 
         .item::after {
             font-size: 0.85rem;
@@ -277,6 +338,62 @@
             left: 24px;
             color: #94a3b8;
             pointer-events: none;
+            font-size: 0.72rem;
+        }
+
+        .brand-accent { color: var(--toyota-red); }
+
+        /* --- DISCOVERY TOAST --- */
+        #discovery-toast {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translate(-50%, -20px) scale(0.9);
+            background: var(--toyota-black);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 12px 25px -6px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            z-index: 600;
+            white-space: nowrap;
+        }
+        #discovery-toast.show {
+            transform: translate(-50%, 0) scale(1);
+            opacity: 1;
+        }
+        #discovery-toast .toast-label { color: var(--toyota-red); font-weight: 800; }
+
+        /* --- CONFETTI --- */
+        .confetti-piece {
+            position: fixed;
+            top: -12px;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 3000;
+            opacity: 0.95;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            to { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+        }
+
+        /* --- FAILED COMBO SHAKE --- */
+        .board-item.shake { animation: shakeItem 0.4s ease; }
+        @keyframes shakeItem {
+            0%, 100% { transform: translate(-50%, -50%); }
+            20% { transform: translate(calc(-50% - 6px), -50%); }
+            40% { transform: translate(calc(-50% + 6px), -50%); }
+            60% { transform: translate(calc(-50% - 4px), -50%); }
+            80% { transform: translate(calc(-50% + 4px), -50%); }
         }
 
         /* --- INSTRUCTIONS BUTTON --- */
@@ -298,8 +415,8 @@
             transition: all 0.15s ease;
         }
         #instructions-btn:hover {
-            color: var(--t2-base);
-            border-color: var(--t2-base);
+            color: var(--toyota-red);
+            border-color: var(--toyota-red);
         }
 
         #instructions-overlay {
@@ -422,18 +539,28 @@
 
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-soft);
+            border-bottom: 3px solid var(--toyota-red-light);
             padding-bottom: 16px; margin-bottom: 20px;
         }
-        .modal-header h3 { margin: 0; font-size: 1.1rem; }
-        .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--slate-muted); }
+        .modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--slate-muted);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .close-btn:hover { background: var(--toyota-red-light); color: var(--toyota-red); }
 
-        /* --- FLOATING TIMER --- */
+        /* --- HEADER TIMER --- */
         #game-timer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1500;
             background: var(--surface-white);
             border: 1px solid var(--border-soft);
             border-radius: 50px;
@@ -447,12 +574,29 @@
             align-items: center;
             gap: 8px;
             user-select: none;
+            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
         }
 
         #game-timer .timer-dot {
             width: 8px; height: 8px; border-radius: 50%;
             background: #22c55e;
             box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #game-timer.urgent {
+            color: var(--toyota-red);
+            border-color: var(--toyota-red);
+            background: var(--toyota-red-light);
+            animation: timerPulse 0.9s ease-in-out infinite;
+        }
+        #game-timer.urgent .timer-dot {
+            background: var(--toyota-red);
+            box-shadow: 0 0 0 3px rgba(235, 10, 30, 0.22);
+        }
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         /* --- START GAME MODAL --- */
@@ -472,27 +616,70 @@
         #start-overlay.hidden { opacity: 0; pointer-events: none; }
 
         #start-card {
+            position: relative;
             background: var(--surface-white);
-            width: 420px;
+            width: 440px;
             max-width: 90vw;
-            border-radius: 20px;
-            padding: 36px 32px;
+            border-radius: 24px;
+            padding: 40px 32px 32px;
             box-shadow: 0 20px 30px -10px rgba(0,0,0,0.25);
             border: 1px solid var(--border-soft);
             text-align: center;
+            overflow: hidden;
+        }
+
+        #start-ribbon {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--toyota-red), var(--toyota-red-dark), var(--toyota-black));
+        }
+
+        #start-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            border-radius: 14px;
+            margin-bottom: 12px;
         }
 
         #start-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.3rem;
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -0.3px;
+            color: var(--toyota-black);
         }
 
-        #start-card p {
-            margin: 0 0 24px 0;
+        .start-tagline {
+            margin: 0 0 20px 0;
             color: var(--slate-muted);
             font-size: 0.9rem;
             line-height: 1.5;
         }
+
+        #start-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .start-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-soft);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--slate-text);
+        }
+
+        .start-step-icon { font-size: 1rem; flex-shrink: 0; }
 
         /* --- TIME'S UP MODAL --- */
         #timeup-overlay {
@@ -523,6 +710,7 @@
         #timeup-card h3 {
             margin: 0 0 4px 0;
             font-size: 1.4rem;
+            font-weight: 900;
             text-align: center;
         }
 
@@ -557,8 +745,8 @@
             text-align: center;
             padding: 14px;
             border-radius: 10px;
-            background: var(--t2-light);
-            border: 1px solid rgba(2, 132, 199, 0.2);
+            background: var(--toyota-red-light);
+            border: 1px solid rgba(235, 10, 30, 0.2);
             margin-top: 12px;
         }
 
@@ -567,14 +755,14 @@
             font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--t2-base);
+            color: var(--toyota-red);
             font-weight: 700;
         }
 
         .timeup-score-box .timeup-score-value {
             font-size: 1.8rem;
             font-weight: 800;
-            color: var(--t2-base);
+            color: var(--toyota-red);
         }
 
         #lb-save-status {
@@ -591,7 +779,8 @@
             left: 24px;
             max-width: 300px;
             background: var(--surface-white);
-            border: 1px solid var(--border-soft);
+            border: 1px solid var(--toyota-red-light);
+            border-left: 4px solid var(--toyota-red);
             border-radius: 16px;
             border-bottom-left-radius: 4px;
             padding: 12px 16px;
@@ -628,7 +817,7 @@
             font-size: 0.62rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--t4-base);
+            color: var(--toyota-red);
             font-weight: 800;
         }
 
@@ -691,9 +880,16 @@
 
         .lb-table tr:last-child td { border-bottom: none; }
 
+        .lb-table tbody tr:nth-child(odd) { background: var(--bg-canvas); }
+        .lb-table tbody tr:nth-child(1) { background: #fef3c7; }
+        .lb-table tbody tr:nth-child(2) { background: #f1f5f9; }
+        .lb-table tbody tr:nth-child(3) { background: #fde8d8; }
+
         .lb-table .lb-rank { color: var(--slate-muted); font-weight: 800; width: 32px; }
-        .lb-table tr:first-child .lb-rank { color: var(--t4-base); }
-        .lb-table .lb-score { color: var(--t2-base); font-weight: 800; text-align: right; }
+        .lb-table tbody tr:nth-child(1) .lb-rank { color: #b45309; }
+        .lb-table tbody tr:nth-child(2) .lb-rank { color: #475569; }
+        .lb-table tbody tr:nth-child(3) .lb-rank { color: #9a3412; }
+        .lb-table .lb-score { color: var(--toyota-red); font-weight: 800; text-align: right; }
 
         /* --- PLAYER NAME INPUT (Start card) --- */
         #player-name-input {
@@ -756,30 +952,47 @@
 </head>
 <body>
 
-    <div id="game-timer">
-        <span class="timer-dot"></span>
-        <span id="timer-display">00:00</span>
+    <div id="app-header">
+        <div id="brand-mark">
+            <img src="logo.png" alt="InfiniToyota logo">
+            <span class="brand-text">Infini<span class="brand-accent">Toyota</span></span>
+        </div>
+        <div id="game-timer">
+            <span class="timer-dot"></span>
+            <span id="timer-display">00:00</span>
+        </div>
     </div>
 
     <div id="start-overlay">
         <div id="start-card">
-            <h3>Welcome to the InfiniToyota</h3>
-            <p>Combine data insights to discover new ones. Enter your name and click below to start your session &mdash; this resets the workspace so every player starts fresh.</p>
+            <div id="start-ribbon"></div>
+            <img src="logo.png" alt="InfiniToyota logo" id="start-logo">
+            <h3>Infini<span class="brand-accent">Toyota</span></h3>
+            <p class="start-tagline">Combine data insights to uncover new ones &mdash; race the clock and climb the leaderboard.</p>
+            <div id="start-steps">
+                <div class="start-step"><span class="start-step-icon">🖱️</span>Click a card to drop it on the board</div>
+                <div class="start-step"><span class="start-step-icon">🔗</span>Drag two cards together to combine</div>
+                <div class="start-step"><span class="start-step-icon">🏆</span>Discover them all before time runs out</div>
+            </div>
             <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
             <button id="start-game-btn" class="pill-btn">Start Game</button>
         </div>
     </div>
 
+    <div id="main-row">
     <div id="inventory">
         <div class="stats-box">
             <p>Discovered Insights</p>
             <div class="numbers"><span id="counter">0</span> / <span id="total">0</span></div>
+            <div id="progress-track">
+                <div id="progress-fill"></div>
+            </div>
             <div class="btn-group">
                 <button id="tree-btn" class="pill-btn">Discovery Tree</button>
                 <button id="leaderboard-btn" class="pill-btn">Leaderboard</button>
                 <button id="reset-btn" class="pill-btn pill-btn-danger">Reset Workspace</button>
             </div>
-        </div>  
+        </div>
 
         <h2>Insights Collection</h2>
         <div id="base-items-container"></div>
@@ -787,12 +1000,17 @@
 
     <div id="board-area">
         <div id="board">
-            <h2 id="board-title">InfiniToyota</h2>
+            <h2 id="board-title">Drop insights here to combine them</h2>
+            <div id="discovery-toast">
+                <span class="toast-label">✨ New Insight</span>
+                <span class="toast-name" id="toast-name"></span>
+            </div>
             <div id="clue-bubble">
-                <p class="clue-title">💡 Clue</p>
+                <p class="clue-title">🔧 Pit Crew Tip</p>
                 <div class="clue-text" id="clue-text"></div>
             </div>
         </div>
+    </div>
     </div>
 
     <button id="instructions-btn" title="How to play">?</button>
@@ -816,7 +1034,7 @@
 
     <div id="timeup-overlay">
         <div id="timeup-card">
-            <h3>Time's UP!</h3>
+            <h3>🏁 Time's Up!</h3>
             <p class="timeup-subtitle">Here's what you discovered this round.</p>
             <div id="timeup-summary"></div>
             <div class="timeup-score-box">
@@ -896,6 +1114,7 @@
         const board = document.getElementById('board');
         const counterEl = document.getElementById('counter');
         const totalEl = document.getElementById('total');
+        const progressFillEl = document.getElementById('progress-fill');
         const resetBtn = document.getElementById('reset-btn');
         const treeBtn = document.getElementById('tree-btn');
         const modalOverlay = document.getElementById('modal-overlay');
@@ -970,6 +1189,10 @@
             // --- NEW: STRICTLY EXCLUDE TIER 1 FROM THE CURRENT SCORE ---
             const unlockedInsights = [...discoveredItems].filter(name => (CONCEPT_TIERS[name] || 1) > 1);
             counterEl.textContent = unlockedInsights.length;
+            const progressPct = DERIVED_INSIGHTS_ONLY.length
+                ? (unlockedInsights.length / DERIVED_INSIGHTS_ONLY.length) * 100
+                : 0;
+            progressFillEl.style.width = `${progressPct}%`;
 
             // Update each tier counter badge in the catalog
             [1, 2, 3, 4].forEach(tier => {
@@ -1035,7 +1258,7 @@
                 if (knownItems.length === 0) {
                     const locked = document.createElement('div');
                     locked.className = 'item-locked';
-                    locked.textContent = 'Not yet discovered';
+                    locked.textContent = '🔒 Keep combining to unlock';
                     list.appendChild(locked);
                 } else {
                     knownItems.forEach(name => {
@@ -1103,6 +1326,7 @@
             hideClue();
             initInventory();
             counterEl.textContent = 0;
+            progressFillEl.style.width = '0%';
         }
 
         document.addEventListener('click', (e) => {
@@ -1139,17 +1363,21 @@
                 const combinedKey = [item1, item2].sort().join('+');
 
                 let resultName;
+                let isNewDiscovery = false;
+                let isFailedMerge = false;
                 if (CLEANED_RECIPES[combinedKey]) {
                     resultName = CLEANED_RECIPES[combinedKey];
                     if (!discoveredItems.has(resultName)) {
                         discoveredItems.add(resultName);
                         lastDiscoveryTime = Date.now();
+                        isNewDiscovery = true;
                     }
                     failedAttempts = 0;
                     hideClue();
                     updateProgress();
                 } else {
                     resultName = [item1, item2].sort()[0];
+                    isFailedMerge = true;
                     failedAttempts++;
                     if (failedAttempts >= FAILS_BEFORE_CLUE) {
                         failedAttempts = 0;
@@ -1157,9 +1385,18 @@
                     }
                 }
 
-                createBoardItem(resultName, targetElement.style.left, targetElement.style.top, true);
+                const resultEl = createBoardItem(resultName, targetElement.style.left, targetElement.style.top, true);
                 targetElement.remove();
                 if (draggedElement.dataset.source === 'board') draggedElement.remove();
+
+                if (isNewDiscovery) {
+                    const resultTier = CONCEPT_TIERS[resultName] || 1;
+                    showDiscoveryToast(resultName, resultTier);
+                    spawnConfetti(resultTier === 4 ? 55 : 26, resultTier);
+                } else if (isFailedMerge) {
+                    resultEl.classList.add('shake');
+                    resultEl.addEventListener('animationend', () => resultEl.classList.remove('shake'), { once: true });
+                }
                 return;
             }
 
@@ -1192,6 +1429,43 @@
 
             el.addEventListener('dblclick', () => el.remove());
             board.appendChild(el);
+            return el;
+        }
+
+        // --- DISCOVERY TOAST ---
+        const discoveryToast = document.getElementById('discovery-toast');
+        const toastNameEl = document.getElementById('toast-name');
+        let toastHideTimeout = null;
+
+        function showDiscoveryToast(name, tier) {
+            const meta = TIER_META[tier];
+            toastNameEl.textContent = name;
+            toastNameEl.style.color = meta.color;
+            discoveryToast.classList.remove('show');
+            void discoveryToast.offsetWidth;
+            discoveryToast.classList.add('show');
+
+            if (toastHideTimeout) clearTimeout(toastHideTimeout);
+            toastHideTimeout = setTimeout(() => discoveryToast.classList.remove('show'), 2500);
+        }
+
+        // --- CONFETTI ---
+        const CONFETTI_COLORS = ['#EB0A1E', '#101010', '#ffffff', '#d97706'];
+
+        function spawnConfetti(count, tier) {
+            const boardRect = board.getBoundingClientRect();
+            const colors = tier === 4 ? ['#d97706', '#fbbf24', '#EB0A1E', '#ffffff'] : CONFETTI_COLORS;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = `${boardRect.left + Math.random() * boardRect.width}px`;
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+                piece.style.animationDuration = `${1.1 + Math.random() * 0.9}s`;
+                piece.style.animationDelay = `${Math.random() * 0.2}s`;
+                document.body.appendChild(piece);
+                piece.addEventListener('animationend', () => piece.remove(), { once: true });
+            }
         }
 
         // --- TREE MODAL ---
@@ -1238,7 +1512,7 @@
             const craftedDiscoveries = Object.keys(RECIPE_PARENTS).filter(item => discoveredItems.has(item));
 
             if (craftedDiscoveries.length === 0) {
-                treeContainer.innerHTML = `<div class="empty-tree">No insight combinations discovered yet.<br>Combine source tables on the canvas to unlock recipes!</div>`;
+                treeContainer.innerHTML = `<div class="empty-tree">🌱 No insight combinations discovered yet.<br>Combine source tables on the canvas to unlock recipes!</div>`;
                 return;
             }
 
@@ -1268,8 +1542,10 @@
             });
         }
 
-        // --- FLOATING COUNTDOWN TIMER ---
+        // --- COUNTDOWN TIMER ---
         const timerDisplay = document.getElementById('timer-display');
+        const gameTimerEl = document.getElementById('game-timer');
+        const TIMER_URGENT_MS = 10000;
         const COUNTDOWN_MS = 60000;
         let timerInterval = null;
         let countdownEndTime = null;
@@ -1286,18 +1562,22 @@
             timerInterval = null;
             countdownEndTime = null;
             timerDisplay.textContent = formatTime(COUNTDOWN_MS);
+            gameTimerEl.classList.remove('urgent');
         }
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             countdownEndTime = Date.now() + COUNTDOWN_MS;
+            gameTimerEl.classList.remove('urgent');
 
             const tick = () => {
                 const remaining = countdownEndTime - Date.now();
                 timerDisplay.textContent = formatTime(remaining);
+                gameTimerEl.classList.toggle('urgent', remaining > 0 && remaining <= TIMER_URGENT_MS);
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
+                    gameTimerEl.classList.remove('urgent');
                     showTimeUpModal();
                 }
             };
@@ -1371,6 +1651,7 @@
             const result = computeGameResult();
             timeupScoreEl.textContent = result.score.toLocaleString();
             submitScore(result);
+            spawnConfetti(60, 4);
 
             timeupOverlay.classList.add('active');
         }
@@ -1415,7 +1696,7 @@
             }
 
             if (entries.length === 0) {
-                leaderboardMessage('No scores yet. Be the first on the board!');
+                leaderboardMessage('🏆 No scores yet. Be the first on the board!');
                 return;
             }
 
@@ -1428,10 +1709,11 @@
             `;
             const tbody = document.createElement('tbody');
 
+            const rankMedals = ['🥇', '🥈', '🥉'];
             entries.forEach((entry, i) => {
                 const tr = document.createElement('tr');
                 const cells = [
-                    { cls: 'lb-rank', text: `${i + 1}` },
+                    { cls: 'lb-rank', text: rankMedals[i] ? `${rankMedals[i]} ${i + 1}` : `${i + 1}` },
                     { cls: 'lb-name', text: entry.name || 'Anonymous' },
                     { cls: 'lb-insights', text: `${entry.insightsFound ?? 0}` },
                     { cls: 'lb-time', text: `${(entry.time ?? 0).toFixed(1)}s` },

@@ -36,15 +36,18 @@ Players drag/click "insight" cards onto a board and combine pairs of them to dis
 
 | Section | HTML id | Controlling JS |
 |---|---|---|
-| Floating countdown timer | `#game-timer` / `#timer-display` | `startTimer()`, `stopTimer()`, `formatTime()` |
-| Start Game gate (with name input) | `#start-overlay`, `#start-game-btn`, `#player-name-input` | `startGameBtn` click handler |
-| Sidebar (inventory + stats) | `#inventory`, `#base-items-container` | `initInventory()`, `updateProgress()` |
-| Board (drag/drop canvas) | `#board` | `board` drop/dragover listeners, `createBoardItem()` |
+| Brand header (logo + wordmark + timer) | `#app-header`, `#brand-mark`, `#game-timer` / `#timer-display` | `startTimer()`, `stopTimer()`, `formatTime()` — toggles `.urgent` on `#game-timer` in the final `TIMER_URGENT_MS` (10s) |
+| Start Game gate (hero card with steps + name input) | `#start-overlay`, `#start-game-btn`, `#player-name-input` | `startGameBtn` click handler |
+| Sidebar (inventory + stats + progress bar) | `#inventory`, `#base-items-container`, `#progress-track`/`#progress-fill` | `initInventory()`, `updateProgress()` |
+| Board (drag/drop canvas) | `#board`, `#main-row` wraps sidebar + board | `board` drop/dragover listeners, `createBoardItem()` |
+| Discovery toast (new-insight popup) | `#discovery-toast`, `#toast-name` | `showDiscoveryToast()`, called from the `drop` handler's match branch |
+| Confetti burst | `.confetti-piece` (spawned/removed on the fly) | `spawnConfetti()`, called on new discoveries and when the Time's Up modal opens |
+| Failed-combo shake | `.board-item.shake` | applied in the `drop` handler's no-match branch, removed on `animationend` |
 | Clue chat bubble (bottom-left of board) | `#clue-bubble`, `#clue-text` | `showClue()`, `hideClue()`, `pickClueIngredient()` |
 | Instructions ("?" button) | `#instructions-btn`, `#instructions-overlay` | inline listeners |
 | Discovery Tree modal | `#modal-overlay`, `#tree-container` | `renderTree()`, `getTierBadgeStyle()` |
 | Time's Up modal (with score) | `#timeup-overlay`, `#timeup-summary`, `#timeup-score` | `showTimeUpModal()`, `computeGameResult()`, `submitScore()` |
-| Leaderboard modal | `#leaderboard-overlay`, `#leaderboard-container` | `renderLeaderboard()`, `closeLeaderboardModal()` |
+| Leaderboard modal (medal styling for top 3) | `#leaderboard-overlay`, `#leaderboard-container` | `renderLeaderboard()`, `closeLeaderboardModal()` |
 
 ## 5. Core gameplay loop
 
