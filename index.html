@@ -997,6 +997,53 @@
             content: ''; position: absolute; left: -24px; top: 50%;
             width: 16px; height: 2px; background: var(--border-soft);
         }
+        
+        .how-to-card {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 10px 20px; /* Sets 20px top/bottom and 24px left/right padding cleanly */
+            margin: 0 auto 24px auto; /* Centers horizontally and guarantees 24px space below! */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            max-width: 400;
+        }
+
+        .how-to-title {
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: var(--slate-text);
+            margin: 0 0 16px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .how-to-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .how-to-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: var(--slate-muted);
+            line-height: 1.4;
+        }
+
+        .how-to-step strong {
+            color: var(--slate-text);
+        }
+
+        .start-step-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
 
         .tier-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
         .empty-tree { text-align: center; color: var(--slate-muted); padding: 40px 0; font-size: 0.9rem; }
@@ -1033,10 +1080,22 @@
                     <span class="mode-desc">Race the clock &mdash; score is tracked</span>
                 </button>
             </div>
-            <div id="start-steps">
-                <div class="start-step"><span class="start-step-icon">🖱️</span>Click a card to drop it on the board</div>
-                <div class="start-step"><span class="start-step-icon">🔗</span>Drag two cards together to combine</div>
-                <div class="start-step"><span class="start-step-icon">🏆</span>Discover them all before time runs out</div>
+            <div class="how-to-card">
+            <h3 class="how-to-title">How to Play</h3>
+                <ul class="how-to-steps">
+                    <li class="how-to-step">
+                        <span class="start-step-icon">🖱️</span>
+                        <span><strong>Click a card</strong> to drop it onto the board</span>
+                    </li>
+                    <li class="how-to-step">
+                        <span class="start-step-icon">🔗</span>
+                        <span><strong>Drag two cards together</strong> to combine them</span>
+                    </li>
+                    <li class="how-to-step">
+                        <span class="start-step-icon">🏆</span>
+                        <span><strong>Discover them all</strong> before time runs out</span>
+                    </li>
+                </ul>
             </div>
             <div id="challenge-fields">
                 <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
