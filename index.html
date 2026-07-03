@@ -932,6 +932,7 @@
 
         /* --- PLAYER NAME INPUT + DIVISION SELECT (Start card, Challenge mode) --- */
         #player-name-input,
+        #player-noreg-input,
         #division-select {
             width: 100%;
             box-sizing: border-box;
@@ -949,17 +950,24 @@
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        #division-select {
-            cursor: pointer;
-            text-align-last: center;
+        /* 2. Create the side-by-side flex container */
+        .form-row {
+            display: flex;
+            gap: 10px; /* Space between No. Reg and Division */
+            width: 100%;
         }
 
-        #division-select:invalid,
-        #division-select option[value=""] {
-            color: var(--slate-muted);
+        /* 3. Make the items inside the flex row share equal width and remove double bottom-margins */
+        .form-row #player-noreg-input,
+        .form-row #division-select {
+            flex: 1;
+            margin-bottom: 14px;
+            min-width: 0; /* Prevents long placeholder text from overflowing the flex box */
         }
 
+        /* 4. Include #player-noreg-input in your focus and error styles */
         #player-name-input:focus,
+        #player-noreg-input:focus,
         #division-select:focus {
             border-color: var(--t2-base);
             box-shadow: 0 0 0 3px var(--t2-light);
@@ -967,6 +975,7 @@
         }
 
         #player-name-input.input-error,
+        #player-noreg-input.input-error,
         #division-select.input-error {
             border-color: #ef4444;
             box-shadow: 0 0 0 3px #fee2e2;
@@ -1099,27 +1108,30 @@
             </div>
             <div id="challenge-fields">
                 <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
-                <select id="division-select" required>
-                    <option value="" disabled selected>Select your division</option>
-                    <option>ASBD</option>
-                    <option>AREA</option>
-                    <option>CP</option>
-                    <option>CFAM</option>
-                    <option>FAD</option>
-                    <option>GR</option>
-                    <option>HRGA</option>
-                    <option>ISTD</option>
-                    <option>LEXUS</option>
-                    <option>MPD</option>
-                    <option>MSD</option>
-                    <option>NMD</option>
-                    <option>PPD</option>
-                    <option>SPLD</option>
-                    <option>SSP</option>
-                    <option>TSD</option>
-                    <option>TTC</option>
-                    <option>VLD</option>
-                </select>
+                <div class="form-row">
+                    <input type="text" id="player-noreg-input" placeholder="No. Reg" maxlength="30" autocomplete="off">
+                    <select id="division-select" required>
+                        <option value="" disabled selected>Select your division</option>
+                        <option>ASBD</option>
+                        <option>AREA</option>
+                        <option>CP</option>
+                        <option>CFAM</option>
+                        <option>FAD</option>
+                        <option>GR</option>
+                        <option>HRGA</option>
+                        <option>ISTD</option>
+                        <option>LEXUS</option>
+                        <option>MPD</option>
+                        <option>MSD</option>
+                        <option>NMD</option>
+                        <option>PPD</option>
+                        <option>SPLD</option>
+                        <option>SSP</option>
+                        <option>TSD</option>
+                        <option>TTC</option>
+                        <option>VLD</option>
+                    </select>
+                </div>
             </div>
             <button id="start-game-btn" class="pill-btn">Start Challenge</button>
         </div>
@@ -1272,6 +1284,7 @@
         let failedAttempts = 0;
         let playerName = 'Anonymous';
         let playerDivision = '';
+        let playerNoreg = '';
         let gameMode = 'challenge';   // 'sandbox' | 'challenge'
         let gameStartTime = null;
         let lastDiscoveryTime = null;
@@ -1786,6 +1799,7 @@
                 await window.leaderboardDB.addScore({
                     name: playerName,
                     division: playerDivision,
+                    noreg: playerNoreg, // <-- ADD THIS so Firebase receives it!
                     insightsFound: result.foundInsights,
                     time: Math.round(result.durationSeconds * 10) / 10,
                     score: result.score
@@ -1932,6 +1946,7 @@
         const startOverlay = document.getElementById('start-overlay');
         const startGameBtn = document.getElementById('start-game-btn');
         const playerNameInput = document.getElementById('player-name-input');
+        const playerNoregInput = document.getElementById('player-noreg-input'); // <-- ADD THIS
         const divisionSelect = document.getElementById('division-select');
         const challengeFields = document.getElementById('challenge-fields');
         const modeBtns = document.querySelectorAll('.mode-btn');
@@ -1946,23 +1961,34 @@
         playerNameInput.addEventListener('input', () => playerNameInput.classList.remove('input-error'));
         playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') startGameBtn.click(); });
         divisionSelect.addEventListener('change', () => divisionSelect.classList.remove('input-error'));
-
+        playerNoregInput.addEventListener('input', () => playerNoregInput.classList.remove('input-error'));
+        
         startGameBtn.addEventListener('click', () => {
-            if (gameMode === 'challenge') {
-                const nameValue = playerNameInput.value.trim();
-                if (!nameValue) {
-                    playerNameInput.classList.add('input-error');
-                    playerNameInput.focus();
-                    return;
-                }
-                if (!divisionSelect.value) {
-                    divisionSelect.classList.add('input-error');
-                    divisionSelect.focus();
-                    return;
-                }
-                playerName = nameValue;
-                playerDivision = divisionSelect.value;
+        if (gameMode === 'challenge') {
+            const nameValue = playerNameInput.value.trim();
+            const noregValue = playerNoregInput.value.trim(); // <-- ADD THIS
+            
+            if (!nameValue) {
+                playerNameInput.classList.add('input-error');
+                playerNameInput.focus();
+                return;
             }
+            // Add validation for No. Reg:
+            if (!noregValue) {
+                playerNoregInput.classList.add('input-error');
+                playerNoregInput.focus();
+                return;
+            }
+            if (!divisionSelect.value) {
+                divisionSelect.classList.add('input-error');
+                divisionSelect.focus();
+                return;
+            }
+            
+            playerName = nameValue;
+            playerNoreg = noregValue; // <-- Store it!
+            playerDivision = divisionSelect.value;
+        }
 
             // Refresh cache so no state leaks between players
             localStorage.clear();
@@ -2056,6 +2082,7 @@
                 await addDoc(collection(db, "leaderboard"), {
                     name: entry.name,
                     division: entry.division,
+                    noreg: entry.noreg,
                     insightsFound: entry.insightsFound,
                     time: entry.time,
                     score: entry.score,
