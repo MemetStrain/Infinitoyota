@@ -658,6 +658,44 @@
             line-height: 1.5;
         }
 
+        /* --- MODE PICKER (Sandbox / Challenge) --- */
+        #mode-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 12px 8px;
+            border-radius: 14px;
+            border: 2px solid var(--border-soft);
+            background: var(--bg-canvas);
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+        }
+        .mode-btn:hover { transform: translateY(-2px); }
+        .mode-btn:active { transform: translateY(0); }
+
+        .mode-btn .mode-icon { font-size: 1.3rem; }
+        .mode-btn .mode-name { font-weight: 800; font-size: 0.9rem; color: var(--slate-text); }
+        .mode-btn .mode-desc { font-size: 0.63rem; font-weight: 600; color: var(--slate-muted); }
+
+        .mode-btn.selected {
+            border-color: var(--toyota-red);
+            background: var(--toyota-red-light);
+        }
+        .mode-btn.selected .mode-name { color: var(--toyota-red); }
+
+        #challenge-fields.hidden { display: none; }
+
+        #game-timer.hidden { display: none; }
+
         #start-steps {
             display: flex;
             flex-direction: column;
@@ -890,9 +928,11 @@
         .lb-table tbody tr:nth-child(2) .lb-rank { color: #475569; }
         .lb-table tbody tr:nth-child(3) .lb-rank { color: #9a3412; }
         .lb-table .lb-score { color: var(--toyota-red); font-weight: 800; text-align: right; }
+        .lb-table .lb-division { color: var(--slate-muted); font-size: 0.75rem; letter-spacing: 0.4px; }
 
-        /* --- PLAYER NAME INPUT (Start card) --- */
-        #player-name-input {
+        /* --- PLAYER NAME INPUT + DIVISION SELECT (Start card, Challenge mode) --- */
+        #player-name-input,
+        #division-select {
             width: 100%;
             box-sizing: border-box;
             padding: 11px 14px;
@@ -909,13 +949,25 @@
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        #player-name-input:focus {
+        #division-select {
+            cursor: pointer;
+            text-align-last: center;
+        }
+
+        #division-select:invalid,
+        #division-select option[value=""] {
+            color: var(--slate-muted);
+        }
+
+        #player-name-input:focus,
+        #division-select:focus {
             border-color: var(--t2-base);
             box-shadow: 0 0 0 3px var(--t2-light);
             background: var(--surface-white);
         }
 
-        #player-name-input.input-error {
+        #player-name-input.input-error,
+        #division-select.input-error {
             border-color: #ef4444;
             box-shadow: 0 0 0 3px #fee2e2;
         }
@@ -969,13 +1021,48 @@
             <img src="logo.png" alt="InfiniToyota logo" id="start-logo">
             <h3>Infini<span class="brand-accent">Toyota</span></h3>
             <p class="start-tagline">Combine data insights to uncover new ones &mdash; race the clock and climb the leaderboard.</p>
+            <div id="mode-select">
+                <button type="button" class="mode-btn" data-mode="sandbox">
+                    <span class="mode-icon">🧪</span>
+                    <span class="mode-name">Sandbox</span>
+                    <span class="mode-desc">Free play &mdash; no timer, no score</span>
+                </button>
+                <button type="button" class="mode-btn selected" data-mode="challenge">
+                    <span class="mode-icon">🏆</span>
+                    <span class="mode-name">Challenge</span>
+                    <span class="mode-desc">Race the clock &mdash; score is tracked</span>
+                </button>
+            </div>
             <div id="start-steps">
                 <div class="start-step"><span class="start-step-icon">🖱️</span>Click a card to drop it on the board</div>
                 <div class="start-step"><span class="start-step-icon">🔗</span>Drag two cards together to combine</div>
                 <div class="start-step"><span class="start-step-icon">🏆</span>Discover them all before time runs out</div>
             </div>
-            <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
-            <button id="start-game-btn" class="pill-btn">Start Game</button>
+            <div id="challenge-fields">
+                <input type="text" id="player-name-input" placeholder="Your name" maxlength="30" autocomplete="off">
+                <select id="division-select" required>
+                    <option value="" disabled selected>Select your division</option>
+                    <option>ASBD</option>
+                    <option>AREA</option>
+                    <option>CP</option>
+                    <option>CFAM</option>
+                    <option>FAD</option>
+                    <option>GR</option>
+                    <option>HRGA</option>
+                    <option>ISTD</option>
+                    <option>LEXUS</option>
+                    <option>MPD</option>
+                    <option>MSD</option>
+                    <option>NMD</option>
+                    <option>PPD</option>
+                    <option>SPLD</option>
+                    <option>SSP</option>
+                    <option>TSD</option>
+                    <option>TTC</option>
+                    <option>VLD</option>
+                </select>
+            </div>
+            <button id="start-game-btn" class="pill-btn">Start Challenge</button>
         </div>
     </div>
 
@@ -1125,6 +1212,8 @@
         let discoveredItems = new Set(STARTING_ITEMS);
         let failedAttempts = 0;
         let playerName = 'Anonymous';
+        let playerDivision = '';
+        let gameMode = 'challenge';   // 'sandbox' | 'challenge'
         let gameStartTime = null;
         let lastDiscoveryTime = null;
 
@@ -1616,6 +1705,7 @@
             try {
                 await window.leaderboardDB.addScore({
                     name: playerName,
+                    division: playerDivision,
                     insightsFound: result.foundInsights,
                     time: Math.round(result.durationSeconds * 10) / 10,
                     score: result.score
@@ -1704,7 +1794,7 @@
             table.className = 'lb-table';
             table.innerHTML = `
                 <thead>
-                    <tr><th>#</th><th>Player</th><th>Insights</th><th>Time</th><th style="text-align:right">Score</th></tr>
+                    <tr><th>#</th><th>Player</th><th>Division</th><th>Insights</th><th>Time</th><th style="text-align:right">Score</th></tr>
                 </thead>
             `;
             const tbody = document.createElement('tbody');
@@ -1715,6 +1805,7 @@
                 const cells = [
                     { cls: 'lb-rank', text: rankMedals[i] ? `${rankMedals[i]} ${i + 1}` : `${i + 1}` },
                     { cls: 'lb-name', text: entry.name || 'Anonymous' },
+                    { cls: 'lb-division', text: entry.division || '—' },
                     { cls: 'lb-insights', text: `${entry.insightsFound ?? 0}` },
                     { cls: 'lb-time', text: `${(entry.time ?? 0).toFixed(1)}s` },
                     { cls: 'lb-score', text: (entry.score ?? 0).toLocaleString() }
@@ -1757,22 +1848,41 @@
         closeLeaderboardBtn.addEventListener('click', closeLeaderboardModal);
         leaderboardOverlay.addEventListener('click', (e) => { if (e.target === leaderboardOverlay) closeLeaderboardModal(); });
 
-        // --- START GAME MODAL ---
+        // --- START GAME MODAL (mode picker + challenge fields) ---
         const startOverlay = document.getElementById('start-overlay');
         const startGameBtn = document.getElementById('start-game-btn');
         const playerNameInput = document.getElementById('player-name-input');
+        const divisionSelect = document.getElementById('division-select');
+        const challengeFields = document.getElementById('challenge-fields');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        modeBtns.forEach(btn => btn.addEventListener('click', () => {
+            gameMode = btn.dataset.mode;
+            modeBtns.forEach(b => b.classList.toggle('selected', b === btn));
+            challengeFields.classList.toggle('hidden', gameMode === 'sandbox');
+            startGameBtn.textContent = gameMode === 'sandbox' ? 'Start Sandbox' : 'Start Challenge';
+        }));
 
         playerNameInput.addEventListener('input', () => playerNameInput.classList.remove('input-error'));
         playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') startGameBtn.click(); });
+        divisionSelect.addEventListener('change', () => divisionSelect.classList.remove('input-error'));
 
         startGameBtn.addEventListener('click', () => {
-            const nameValue = playerNameInput.value.trim();
-            if (!nameValue) {
-                playerNameInput.classList.add('input-error');
-                playerNameInput.focus();
-                return;
+            if (gameMode === 'challenge') {
+                const nameValue = playerNameInput.value.trim();
+                if (!nameValue) {
+                    playerNameInput.classList.add('input-error');
+                    playerNameInput.focus();
+                    return;
+                }
+                if (!divisionSelect.value) {
+                    divisionSelect.classList.add('input-error');
+                    divisionSelect.focus();
+                    return;
+                }
+                playerName = nameValue;
+                playerDivision = divisionSelect.value;
             }
-            playerName = nameValue;
 
             // Refresh cache so no state leaks between players
             localStorage.clear();
@@ -1781,7 +1891,14 @@
             resetGame();
             gameStartTime = Date.now();
             lastDiscoveryTime = null;
-            startTimer();
+            if (gameMode === 'challenge') {
+                gameTimerEl.classList.remove('hidden');
+                startTimer();
+            } else {
+                // Sandbox: free play — no countdown, no Time's Up, no score
+                stopTimer();
+                gameTimerEl.classList.add('hidden');
+            }
             startOverlay.classList.add('hidden');
             timeupOverlay.classList.remove('active');
             treeOpenedFromTimeUp = false;
@@ -1790,6 +1907,7 @@
         function returnToStartScreen() {
             resetGame();
             stopTimer();
+            gameTimerEl.classList.remove('hidden');
             playerNameInput.value = '';
             startOverlay.classList.remove('hidden');
             timeupOverlay.classList.remove('active');
@@ -1829,7 +1947,7 @@
         // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 
         // reCAPTCHA v3 site key from Firebase Console → App Check (public, safe to embed).
-        const RECAPTCHA_V3_SITE_KEY = "YOUR_RECAPTCHA_V3_SITE_KEY";
+        const RECAPTCHA_V3_SITE_KEY = "6LfzD0ItAAAAAB9F9SGrYJztXVgFI-OeYLjGXlK8";
 
         const isConfigured = !firebaseConfig.apiKey.startsWith("YOUR_");
         let db = null;
@@ -1857,6 +1975,7 @@
             async addScore(entry) {
                 await addDoc(collection(db, "leaderboard"), {
                     name: entry.name,
+                    division: entry.division,
                     insightsFound: entry.insightsFound,
                     time: entry.time,
                     score: entry.score,
