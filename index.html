@@ -490,6 +490,8 @@
             z-index: 9999;
             cursor: grabbing;
             transition: none !important; /* Prevent laggy snapping behavior */
+            animation: none;             /* Stop the float so the card can't bob out from under the cursor */
+            opacity: 0.35;               /* The drag ghost is the "real" card; fade the one left behind */
         }
 
         /* TIER Profiles */
@@ -504,6 +506,16 @@
 
         .board-item[data-tier="4"] { border-color: var(--t4-base); color: var(--t4-base); box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.22), 0 0 0 3px var(--t4-light); }
         .board-item[data-tier="4"]:active { box-shadow: 0 12px 28px -5px rgba(217, 119, 6, 0.4), 0 0 0 5px var(--t4-light); }
+
+        /* Live feedback: the card the drop would merge with. Declared after the tier
+           rules so it overrides their box-shadow without needing !important. */
+        .board-item.merge-target {
+            animation: none;
+            transform: translate(-50%, -50%) scale(1.06);
+            border-color: var(--toyota-red);
+            box-shadow: 0 0 0 4px rgba(235, 10, 30, 0.25), 0 14px 30px -6px rgba(235, 10, 30, 0.45);
+            z-index: 900;
+        }
 
         .board-item.pop { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
@@ -1520,62 +1532,137 @@
             createBoardItem(item.dataset.name, `${cx}px`, `${cy}px`, true);
         });
 
+        // --- MERGE DETECTION ---------------------------------------------------
+        // Cards are absolutely positioned by their CENTRE (they carry a permanent
+        // translate(-50%, -50%)), so style.left/top ARE the centre coords.
+        //
+        // Matching is done on box overlap, not centre-to-centre distance: the cards are
+        // wide pills of wildly different widths, so two long cards can be visually stacked
+        // while their centres are >100px apart. MERGE_TOLERANCE grows each box slightly so
+        // a near-miss still counts.
+        const MERGE_TOLERANCE = 14;
+
+        // Where the cursor grabbed the card, relative to the card's centre. Without this we
+        // would merge based on the cursor instead of where the card actually lands.
+        let grabOffsetX = 0;
+        let grabOffsetY = 0;
+
+        function boxOf(el, cx, cy) {
+            const hw = el.offsetWidth / 2;
+            const hh = el.offsetHeight / 2;
+            return { left: cx - hw, right: cx + hw, top: cy - hh, bottom: cy + hh, cx, cy };
+        }
+
+        // Overlap area of two boxes, each grown by MERGE_TOLERANCE. 0 = no contact.
+        function overlapArea(a, b) {
+            const w = Math.min(a.right, b.right) - Math.max(a.left, b.left) + 2 * MERGE_TOLERANCE;
+            const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) + 2 * MERGE_TOLERANCE;
+            return (w > 0 && h > 0) ? w * h : 0;
+        }
+
+        // The card the drop should merge with: the one overlapping most. Ties (fully covered
+        // cards in a stack) break toward the closest centre.
+        function findMergeTarget(dragEl, centreX, centreY) {
+            if (!dragEl) return null;
+            const dragBox = boxOf(dragEl, centreX, centreY);
+            let best = null, bestArea = 0, bestDist = Infinity;
+
+            board.querySelectorAll('.board-item').forEach(item => {
+                if (item === dragEl) return;
+                const box = boxOf(item, parseFloat(item.style.left), parseFloat(item.style.top));
+                const area = overlapArea(dragBox, box);
+                if (area <= 0) return;
+                const dist = Math.hypot(centreX - box.cx, centreY - box.cy);
+                if (area > bestArea || (area === bestArea && dist < bestDist)) {
+                    best = item; bestArea = area; bestDist = dist;
+                }
+            });
+            return best;
+        }
+
+        // Where the dragged card's centre will land for a pointer at (clientX, clientY).
+        function dropCentre(e) {
+            const boardRect = board.getBoundingClientRect();
+            return {
+                x: e.clientX - boardRect.left - grabOffsetX,
+                y: e.clientY - boardRect.top - grabOffsetY
+            };
+        }
+
+        // Keep the whole card inside the board so it can never land half-off and unreachable.
+        function clampToBoard(el, cx, cy) {
+            const hw = el.offsetWidth / 2;
+            const hh = el.offsetHeight / 2;
+            return {
+                x: Math.min(Math.max(cx, hw), Math.max(hw, board.clientWidth - hw)),
+                y: Math.min(Math.max(cy, hh), Math.max(hh, board.clientHeight - hh))
+            };
+        }
+
+        function clearMergeTarget() {
+            board.querySelectorAll('.board-item.merge-target')
+                 .forEach(el => el.classList.remove('merge-target'));
+        }
+        // -----------------------------------------------------------------------
+
         document.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('item') || e.target.classList.contains('board-item')) {
                 draggedElement = e.target;
-                
-                // If it's an item on the board, temporarily kill animations for rendering performance
+
                 if (draggedElement.classList.contains('board-item')) {
-                    draggedElement.classList.add('dragging');
+                    // Grab offset only matters for a card already on the board — an inventory
+                    // chip spawns a brand-new card centred on the cursor.
+                    const rect = draggedElement.getBoundingClientRect();
+                    grabOffsetX = e.clientX - (rect.left + rect.width / 2);
+                    grabOffsetY = e.clientY - (rect.top + rect.height / 2);
+
+                    // Deferred: applying .dragging synchronously would be baked into the
+                    // browser's drag-image snapshot, making the ghost itself translucent.
+                    const el = draggedElement;
+                    setTimeout(() => { if (draggedElement === el) el.classList.add('dragging'); }, 0);
+                } else {
+                    grabOffsetX = 0;
+                    grabOffsetY = 0;
                 }
-                
+
                 e.dataTransfer.setData('text/plain', '');
             }
         });
 
         // Clean up the dragging state if the user drops it outside or cancels the drag
-        document.addEventListener('dragend', (e) => {
-            if (draggedElement) {
-                draggedElement.classList.remove('dragging');
-            }
+        document.addEventListener('dragend', () => {
+            if (draggedElement) draggedElement.classList.remove('dragging');
+            clearMergeTarget();
+            // Stale references here previously let an unrelated drag (text, a file) re-run
+            // the merge logic against a detached element.
+            draggedElement = null;
         });
 
-        board.addEventListener('dragover', e => e.preventDefault());
+        // Live preview of what the drop will hit.
+        board.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!draggedElement) return;
+            const { x, y } = dropCentre(e);
+            const target = findMergeTarget(draggedElement, x, y);
+            if (target?.classList.contains('merge-target')) return; // already highlighted
+            clearMergeTarget();
+            if (target) target.classList.add('merge-target');
+        });
+
+        board.addEventListener('dragleave', (e) => {
+            if (!board.contains(e.relatedTarget)) clearMergeTarget();
+        });
 
         board.addEventListener('drop', (e) => {
             e.preventDefault();
+            clearMergeTarget();
             if (!draggedElement) return;
 
-            const boardRect = board.getBoundingClientRect();
-            const dropX = e.clientX - boardRect.left;
-            const dropY = e.clientY - boardRect.top;
+            // The card's landing centre — NOT its pre-drag position, which is what the old
+            // code compared and why stacked cards refused to merge.
+            const { x: dropX, y: dropY } = dropCentre(e);
 
-            // --- NEW PROXIMITY ENGINE ---
-            let targetElement = null;
-            let closestDistance = 50; // Threshold radius in pixels for a successful merge
-
-            // If we are dragging an existing board item, use its placement, otherwise use mouse drop coordinates
-            const sourceIsBoard = draggedElement.dataset.source === 'board';
-            const currentItemX = sourceIsBoard ? parseFloat(draggedElement.style.left) : dropX;
-            const currentItemY = sourceIsBoard ? parseFloat(draggedElement.style.top) : dropY;
-
-            // Scan the board for the nearest neighboring card
-            const itemsOnBoard = board.querySelectorAll('.board-item');
-            itemsOnBoard.forEach((item) => {
-                if (item === draggedElement) return; // Don't check against itself
-
-                const itemX = parseFloat(item.style.left);
-                const itemY = parseFloat(item.style.top);
-
-                // Calculate Euclidean distance between centers
-                const distance = Math.sqrt(Math.pow(currentItemX - itemX, 2) + Math.pow(currentItemY - itemY, 2));
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    targetElement = item; // Found a valid nearby card to merge with!
-                }
-            });
-            // ----------------------------
+            const targetElement = findMergeTarget(draggedElement, dropX, dropY);
 
             if (targetElement && targetElement !== draggedElement) {
                 const item1 = draggedElement.dataset.name;
@@ -1621,10 +1708,15 @@
             }
 
             if (draggedElement.dataset.source === 'inventory') {
-                createBoardItem(draggedElement.dataset.name, `${dropX}px`, `${dropY}px`, false);
+                const el = createBoardItem(draggedElement.dataset.name, `${dropX}px`, `${dropY}px`, false);
+                // Clamp after insertion — the new card's width isn't known until it's in the DOM.
+                const { x, y } = clampToBoard(el, dropX, dropY);
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
             } else if (draggedElement.dataset.source === 'board') {
-                draggedElement.style.left = `${dropX}px`;
-                draggedElement.style.top = `${dropY}px`;
+                const { x, y } = clampToBoard(draggedElement, dropX, dropY);
+                draggedElement.style.left = `${x}px`;
+                draggedElement.style.top = `${y}px`;
                 draggedElement.classList.remove('dragging'); // RESUME FLOATING
             }
         });
