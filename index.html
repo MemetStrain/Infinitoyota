@@ -479,7 +479,17 @@
             font-weight: 700;
             font-size: 0.82rem;
             user-select: none;
+            /* Optimize rendering performance */
+            will-change: transform;
+            transform-origin: center center;
             animation: gentleFloat 4s ease-in-out infinite;
+        }
+
+        /* New class added via JS when dragging starts */
+        .board-item.dragging {
+            z-index: 9999;
+            cursor: grabbing;
+            transition: none !important; /* Prevent laggy snapping behavior */
         }
 
         /* TIER Profiles */
@@ -981,6 +991,15 @@
             box-shadow: 0 0 0 3px #fee2e2;
         }
 
+        .start-error {
+            margin: 0 0 4px;
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .start-error.hidden { display: none; }
+
         #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
         .tree-node { margin: 12px 0; }
         
@@ -1133,6 +1152,7 @@
                     </select>
                 </div>
             </div>
+            <p id="start-error" class="start-error hidden"></p>
             <button id="start-game-btn" class="pill-btn">Start Challenge</button>
         </div>
     </div>
@@ -1503,7 +1523,20 @@
         document.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('item') || e.target.classList.contains('board-item')) {
                 draggedElement = e.target;
+                
+                // If it's an item on the board, temporarily kill animations for rendering performance
+                if (draggedElement.classList.contains('board-item')) {
+                    draggedElement.classList.add('dragging');
+                }
+                
                 e.dataTransfer.setData('text/plain', '');
+            }
+        });
+
+        // Clean up the dragging state if the user drops it outside or cancels the drag
+        document.addEventListener('dragend', (e) => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
             }
         });
 
@@ -1516,7 +1549,33 @@
             const boardRect = board.getBoundingClientRect();
             const dropX = e.clientX - boardRect.left;
             const dropY = e.clientY - boardRect.top;
-            const targetElement = e.target.closest('.board-item');
+
+            // --- NEW PROXIMITY ENGINE ---
+            let targetElement = null;
+            let closestDistance = 50; // Threshold radius in pixels for a successful merge
+
+            // If we are dragging an existing board item, use its placement, otherwise use mouse drop coordinates
+            const sourceIsBoard = draggedElement.dataset.source === 'board';
+            const currentItemX = sourceIsBoard ? parseFloat(draggedElement.style.left) : dropX;
+            const currentItemY = sourceIsBoard ? parseFloat(draggedElement.style.top) : dropY;
+
+            // Scan the board for the nearest neighboring card
+            const itemsOnBoard = board.querySelectorAll('.board-item');
+            itemsOnBoard.forEach((item) => {
+                if (item === draggedElement) return; // Don't check against itself
+
+                const itemX = parseFloat(item.style.left);
+                const itemY = parseFloat(item.style.top);
+
+                // Calculate Euclidean distance between centers
+                const distance = Math.sqrt(Math.pow(currentItemX - itemX, 2) + Math.pow(currentItemY - itemY, 2));
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    targetElement = item; // Found a valid nearby card to merge with!
+                }
+            });
+            // ----------------------------
 
             if (targetElement && targetElement !== draggedElement) {
                 const item1 = draggedElement.dataset.name;
@@ -1566,6 +1625,7 @@
             } else if (draggedElement.dataset.source === 'board') {
                 draggedElement.style.left = `${dropX}px`;
                 draggedElement.style.top = `${dropY}px`;
+                draggedElement.classList.remove('dragging'); // RESUME FLOATING
             }
         });
 
@@ -1773,8 +1833,13 @@
             // 2. Base score rewards completion percentage (up to 5,000 points)
             const baseScore = (totalInsights > 0) ? (foundInsights / totalInsights) * 5000 : 0;
 
-            // 3. Time bonus rewards speed: 10 points for every second saved under MAX_GAME_TIME
-            const timeBonus = Math.max(0, MAX_GAME_TIME - durationSeconds) * 10;
+            // 3. Time bonus rewards speed: 10 points for every second saved under MAX_GAME_TIME.
+            //    Only awarded if at least one derived insight was found — otherwise there was
+            //    no discovery to be "fast" about, and durationSeconds defaults to 0 (which would
+            //    otherwise hand out a full 3000-point bonus for doing nothing).
+            const timeBonus = (foundInsights > 0)
+                ? Math.max(0, MAX_GAME_TIME - durationSeconds) * 10
+                : 0;
 
             // 4. Final score is the sum of both (rounded to nearest integer)
             const score = Math.round(baseScore + timeBonus);
@@ -1958,16 +2023,19 @@
             startGameBtn.textContent = gameMode === 'sandbox' ? 'Start Sandbox' : 'Start Challenge';
         }));
 
+        const startErrorEl = document.getElementById('start-error');
+        const clearStartError = () => startErrorEl.classList.add('hidden');
+
         playerNameInput.addEventListener('input', () => playerNameInput.classList.remove('input-error'));
         playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') startGameBtn.click(); });
         divisionSelect.addEventListener('change', () => divisionSelect.classList.remove('input-error'));
-        playerNoregInput.addEventListener('input', () => playerNoregInput.classList.remove('input-error'));
-        
-        startGameBtn.addEventListener('click', () => {
+        playerNoregInput.addEventListener('input', () => { playerNoregInput.classList.remove('input-error'); clearStartError(); });
+
+        startGameBtn.addEventListener('click', async () => {
         if (gameMode === 'challenge') {
             const nameValue = playerNameInput.value.trim();
             const noregValue = playerNoregInput.value.trim(); // <-- ADD THIS
-            
+
             if (!nameValue) {
                 playerNameInput.classList.add('input-error');
                 playerNameInput.focus();
@@ -1984,7 +2052,32 @@
                 divisionSelect.focus();
                 return;
             }
-            
+
+            // One entry per No. Reg — if this No. Reg already submitted, block the round.
+            if (window.leaderboardDB?.isConfigured) {
+                startGameBtn.disabled = true;
+                const prevLabel = startGameBtn.textContent;
+                startGameBtn.textContent = 'Checking…';
+                try {
+                    if (await window.leaderboardDB.hasNoreg(noregValue)) {
+                        startErrorEl.textContent = 'Maximum tries exceeded';
+                        startErrorEl.classList.remove('hidden');
+                        playerNoregInput.classList.add('input-error');
+                        playerNoregInput.focus();
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Could not verify No. Reg:', err);
+                    startErrorEl.textContent = `Could not verify No. Reg (${err.code || err.message}).`;
+                    startErrorEl.classList.remove('hidden');
+                    return;
+                } finally {
+                    startGameBtn.disabled = false;
+                    startGameBtn.textContent = prevLabel;
+                }
+            }
+
+            clearStartError();
             playerName = nameValue;
             playerNoreg = noregValue; // <-- Store it!
             playerDivision = divisionSelect.value;
@@ -2031,7 +2124,7 @@
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
         import {
             getFirestore, collection, addDoc, getDocs,
-            query, orderBy, limit, serverTimestamp
+            query, orderBy, limit, where, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // The web API key below is NOT a secret — it only identifies this project.
@@ -2047,10 +2140,14 @@
             appId: "1:546213166172:web:128b8e529241fec30d7a99"
         };
 
-        // For LOCAL DEV only: uncomment to print an App Check debug token to the
-        // console, then register it in Firebase Console → App Check. Keep this
-        // commented out (or removed) in production.
-        // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        // LOCAL DEV: reCAPTCHA can't mint a real App Check token on localhost, so every
+        // Firestore call would be denied. Fall back to an App Check *debug* token, which
+        // must be registered in Firebase Console → App Check → Manage debug tokens.
+        // Hostname-gated so this can never activate on the deployed site.
+        const IS_LOCALHOST = ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
+        if (IS_LOCALHOST) {
+            self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        }
 
         // reCAPTCHA v3 site key from Firebase Console → App Check (public, safe to embed).
         const RECAPTCHA_V3_SITE_KEY = "6LeYOkItAAAAALqpBfSUAeQt8l6S5EVkvwkSaa8o";
@@ -2097,6 +2194,16 @@
                     limit(count)
                 ));
                 return snap.docs.map(doc => doc.data());
+            },
+
+            // True if this No. Reg has already submitted an entry (one entry per No. Reg).
+            async hasNoreg(noreg) {
+                const snap = await getDocs(query(
+                    collection(db, "leaderboard"),
+                    where("noreg", "==", noreg),
+                    limit(1)
+                ));
+                return !snap.empty;
             }
         };
     </script>

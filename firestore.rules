@@ -18,10 +18,13 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        request.resource.data.keys().hasOnly(['name', 'division', 'insightsFound', 'time', 'score', 'createdAt'])
+        request.resource.data.keys().hasOnly(['name', 'division', 'noreg', 'insightsFound', 'time', 'score', 'createdAt'])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 1
         && request.resource.data.name.size() <= 30
+        && request.resource.data.noreg is string
+        && request.resource.data.noreg.size() >= 1
+        && request.resource.data.noreg.size() <= 30
         && request.resource.data.division in
             ['ASBD', 'AREA', 'CP', 'CFAM', 'FAD', 'GR', 'HRGA', 'ISTD', 'LEXUS',
              'MPD', 'MSD', 'NMD', 'PPD', 'SPLD', 'SSP', 'TSD', 'TTC', 'VLD']
