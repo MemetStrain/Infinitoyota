@@ -34,6 +34,25 @@
 
             --t4-base: #d97706;   /* Amber Gold */
             --t4-light: #fef3c7;
+
+            /* DATA CATEGORY PALETTES — card color now reflects data type, not tier */
+            --cat-customer: #2563eb;   /* 🟦 Blue */
+            --cat-customer-light: #dbeafe;
+
+            --cat-vehicle: #16a34a;    /* 🟩 Green */
+            --cat-vehicle-light: #dcfce7;
+
+            --cat-sales: #ea580c;      /* 🟧 Orange */
+            --cat-sales-light: #ffedd5;
+
+            --cat-aftersales: #9333ea; /* 🟪 Purple */
+            --cat-aftersales-light: #f3e8ff;
+
+            --cat-digital: #e11d48;    /* 🟥 Red */
+            --cat-digital-light: #ffe4e6;
+
+            --cat-master: #d97706;     /* 🏆 Gold — reserved for the Customer 360 capstone insight */
+            --cat-master-light: #fef3c7;
         }
 
         body {
@@ -278,20 +297,24 @@
             transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s;
         }
 
-        .item[data-tier="1"] { background: rgba(100, 116, 139, 0.08); border-left: 3px solid var(--t1-base); }
-        .item[data-tier="2"] { background: rgba(2, 132, 199, 0.08); border-left: 3px solid var(--t2-base); }
-        .item[data-tier="3"] { background: rgba(147, 51, 234, 0.08); border-left: 3px solid var(--t3-base); }
-        .item[data-tier="4"] { background: rgba(217, 119, 6, 0.08); border-left: 3px solid var(--t4-base); }
+        .item[data-category="customer"]   { background: rgba(37, 99, 235, 0.08);   border-left: 3px solid var(--cat-customer); }
+        .item[data-category="vehicle"]    { background: rgba(22, 163, 74, 0.08);   border-left: 3px solid var(--cat-vehicle); }
+        .item[data-category="sales"]      { background: rgba(234, 88, 12, 0.08);   border-left: 3px solid var(--cat-sales); }
+        .item[data-category="aftersales"] { background: rgba(147, 51, 234, 0.08);  border-left: 3px solid var(--cat-aftersales); }
+        .item[data-category="digital"]    { background: rgba(225, 29, 72, 0.08);   border-left: 3px solid var(--cat-digital); }
+        .item[data-category="master"]     { background: rgba(217, 119, 6, 0.08);   border-left: 3px solid var(--cat-master); }
 
         .item::after {
             font-size: 0.85rem;
             opacity: 0;
             transition: opacity 0.2s;
         }
-        .item[data-tier="1"]::after { color: var(--t1-base); }
-        .item[data-tier="2"]::after { color: var(--t2-base); }
-        .item[data-tier="3"]::after { color: var(--t3-base); }
-        .item[data-tier="4"]::after { color: var(--t4-base); }
+        .item[data-category="customer"]::after   { color: var(--cat-customer); }
+        .item[data-category="vehicle"]::after    { color: var(--cat-vehicle); }
+        .item[data-category="sales"]::after      { color: var(--cat-sales); }
+        .item[data-category="aftersales"]::after { color: var(--cat-aftersales); }
+        .item[data-category="digital"]::after    { color: var(--cat-digital); }
+        .item[data-category="master"]::after     { color: var(--cat-master); }
 
         .item:hover { transform: translateX(4px); }
         .item:hover::after { opacity: 1; }
@@ -494,18 +517,24 @@
             opacity: 0.35;               /* The drag ghost is the "real" card; fade the one left behind */
         }
 
-        /* TIER Profiles */
-        .board-item[data-tier="1"] { border-color: var(--t1-base); color: var(--t1-base); box-shadow: 0 8px 20px -5px rgba(100, 116, 139, 0.22), 0 0 0 3px var(--t1-light); }
-        .board-item[data-tier="1"]:active { box-shadow: 0 12px 28px -5px rgba(100, 116, 139, 0.4), 0 0 0 5px var(--t1-light); }
+        /* DATA CATEGORY Profiles — card color reflects data type, not discovery tier */
+        .board-item[data-category="customer"] { border-color: var(--cat-customer); color: var(--cat-customer); box-shadow: 0 8px 20px -5px rgba(37, 99, 235, 0.22), 0 0 0 3px var(--cat-customer-light); }
+        .board-item[data-category="customer"]:active { box-shadow: 0 12px 28px -5px rgba(37, 99, 235, 0.4), 0 0 0 5px var(--cat-customer-light); }
 
-        .board-item[data-tier="2"] { border-color: var(--t2-base); color: var(--t2-base); box-shadow: 0 8px 20px -5px rgba(2, 132, 199, 0.22), 0 0 0 3px var(--t2-light); }
-        .board-item[data-tier="2"]:active { box-shadow: 0 12px 28px -5px rgba(2, 132, 199, 0.4), 0 0 0 5px var(--t2-light); }
+        .board-item[data-category="vehicle"] { border-color: var(--cat-vehicle); color: var(--cat-vehicle); box-shadow: 0 8px 20px -5px rgba(22, 163, 74, 0.22), 0 0 0 3px var(--cat-vehicle-light); }
+        .board-item[data-category="vehicle"]:active { box-shadow: 0 12px 28px -5px rgba(22, 163, 74, 0.4), 0 0 0 5px var(--cat-vehicle-light); }
 
-        .board-item[data-tier="3"] { border-color: var(--t3-base); color: var(--t3-base); box-shadow: 0 8px 20px -5px rgba(147, 51, 234, 0.22), 0 0 0 3px var(--t3-light); }
-        .board-item[data-tier="3"]:active { box-shadow: 0 12px 28px -5px rgba(147, 51, 234, 0.4), 0 0 0 5px var(--t3-light); }
+        .board-item[data-category="sales"] { border-color: var(--cat-sales); color: var(--cat-sales); box-shadow: 0 8px 20px -5px rgba(234, 88, 12, 0.22), 0 0 0 3px var(--cat-sales-light); }
+        .board-item[data-category="sales"]:active { box-shadow: 0 12px 28px -5px rgba(234, 88, 12, 0.4), 0 0 0 5px var(--cat-sales-light); }
 
-        .board-item[data-tier="4"] { border-color: var(--t4-base); color: var(--t4-base); box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.22), 0 0 0 3px var(--t4-light); }
-        .board-item[data-tier="4"]:active { box-shadow: 0 12px 28px -5px rgba(217, 119, 6, 0.4), 0 0 0 5px var(--t4-light); }
+        .board-item[data-category="aftersales"] { border-color: var(--cat-aftersales); color: var(--cat-aftersales); box-shadow: 0 8px 20px -5px rgba(147, 51, 234, 0.22), 0 0 0 3px var(--cat-aftersales-light); }
+        .board-item[data-category="aftersales"]:active { box-shadow: 0 12px 28px -5px rgba(147, 51, 234, 0.4), 0 0 0 5px var(--cat-aftersales-light); }
+
+        .board-item[data-category="digital"] { border-color: var(--cat-digital); color: var(--cat-digital); box-shadow: 0 8px 20px -5px rgba(225, 29, 72, 0.22), 0 0 0 3px var(--cat-digital-light); }
+        .board-item[data-category="digital"]:active { box-shadow: 0 12px 28px -5px rgba(225, 29, 72, 0.4), 0 0 0 5px var(--cat-digital-light); }
+
+        .board-item[data-category="master"] { border-color: var(--cat-master); color: var(--cat-master); box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.22), 0 0 0 3px var(--cat-master-light); }
+        .board-item[data-category="master"]:active { box-shadow: 0 12px 28px -5px rgba(217, 119, 6, 0.4), 0 0 0 5px var(--cat-master-light); }
 
         /* Live feedback: the card the drop would merge with. Declared after the tier
            rules so it overrides their box-shadow without needing !important. */
@@ -550,8 +579,8 @@
 
         #modal-card {
             background: var(--surface-white);
-            width: 520px;
-            max-width: 90vw; max-height: 80vh;
+            width: 780px;
+            max-width: 92vw; max-height: 85vh;
             border-radius: 20px;
             padding: 28px;
             box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2);
@@ -759,12 +788,15 @@
 
         #timeup-card {
             background: var(--surface-white);
-            width: 440px;
-            max-width: 90vw;
+            width: 540px;
+            max-width: 92vw;
+            max-height: 88vh;
+            overflow-y: auto;
             border-radius: 20px;
             padding: 32px;
             box-shadow: 0 20px 30px -10px rgba(0,0,0,0.25);
             border: 1px solid var(--border-soft);
+            box-sizing: border-box;
         }
 
         #timeup-card h3 {
@@ -781,48 +813,120 @@
             text-align: center;
         }
 
-        .timeup-tier-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            font-weight: 700;
-            font-size: 0.85rem;
+        /* --- SUMMARY KPI TILES --- */
+        #timeup-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
         }
 
-        .timeup-tier-label { display: flex; align-items: center; gap: 8px; }
+        .stat-tile {
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .stat-tile .stat-label {
+            margin: 0 0 4px 0;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--slate-muted);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .stat-tile .stat-value {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--slate-text);
+            line-height: 1.15;
+        }
+
+        .stat-tile .stat-value .stat-sub {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--slate-muted);
+        }
+
+        .stat-tile .stat-hint {
+            margin: 1px 0 0 0;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--slate-muted);
+        }
+
+        .stat-tile-score {
+            background: var(--toyota-red-light);
+            border-color: rgba(235, 10, 30, 0.2);
+        }
+        .stat-tile-score .stat-label,
+        .stat-tile-score .stat-value { color: var(--toyota-red); }
+
+        /* --- INSIGHTS-BY-DASHBOARD METERS --- */
+        .timeup-section-title {
+            margin: 18px 0 10px 0;
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate-muted);
+            font-weight: 700;
+        }
+
+        #timeup-dashboards {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .dash-row {
+            display: grid;
+            grid-template-columns: 158px 1fr 44px;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+        }
+
+        .dash-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: var(--slate-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dash-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        .dash-meter {
+            height: 12px;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        .dash-fill {
+            height: 100%;
+            border-radius: 50px;
+            transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        .dash-count {
+            text-align: right;
+            font-weight: 700;
+            color: var(--slate-muted);
+            font-variant-numeric: tabular-nums;
+        }
 
         .timeup-actions {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-top: 20px;
-        }
-
-        .timeup-score-box {
-            text-align: center;
-            padding: 14px;
-            border-radius: 10px;
-            background: var(--toyota-red-light);
-            border: 1px solid rgba(235, 10, 30, 0.2);
-            margin-top: 12px;
-        }
-
-        .timeup-score-box .timeup-score-label {
-            margin: 0 0 2px 0;
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--toyota-red);
-            font-weight: 700;
-        }
-
-        .timeup-score-box .timeup-score-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--toyota-red);
         }
 
         #lb-save-status {
@@ -1012,30 +1116,142 @@
         }
         .start-error.hidden { display: none; }
 
-        #tree-container { overflow-y: auto; flex-grow: 1; padding-left: 10px; }
-        .tree-node { margin: 12px 0; }
-        
-        .tree-parent {
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 6px;
-            display: inline-block;
+        #tree-container { overflow-y: auto; flex-grow: 1; }
+
+        .tree-section { margin-bottom: 22px; }
+        .tree-section:last-child { margin-bottom: 0; }
+
+        .tree-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 7px;
+            border-bottom: 1px solid var(--border-soft);
+            position: sticky;
+            top: 0;
+            background: var(--surface-white);
+            z-index: 5;
+        }
+
+        .tree-section-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate-muted);
+        }
+
+        .tree-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 10px;
+        }
+
+        .insight-card {
+            background: var(--surface-white);
+            border: 1px solid var(--border-soft);
+            border-left: 3px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+
+        .insight-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .insight-card-name {
+            font-weight: 800;
             font-size: 0.85rem;
+            color: var(--slate-text);
+        }
+
+        .insight-card-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .insight-card-time {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--slate-muted);
+            white-space: nowrap;
+        }
+
+        .insight-card-recipe {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .recipe-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.66rem;
+            font-weight: 600;
+            color: var(--slate-text);
+            padding: 3px 9px;
+            border-radius: 50px;
             border: 1px solid;
+            white-space: nowrap;
         }
 
-        .tree-children {
-            list-style: none; padding-left: 24px; margin: 4px 0 12px 0;
-            border-left: 2px solid var(--border-soft);
+        .recipe-plus {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--slate-muted);
         }
 
-        .tree-child-item {
-            margin: 6px 0; position: relative; font-size: 0.82rem; font-weight: 500;
-            display: flex; align-items: center; gap: 8px;
+        .insight-card-desc {
+            margin: 0;
+            font-size: 0.76rem;
+            color: var(--slate-text);
+            font-weight: 500;
+            line-height: 1.45;
         }
-        .tree-child-item::before {
-            content: ''; position: absolute; left: -24px; top: 50%;
-            width: 16px; height: 2px; background: var(--border-soft);
+
+        .insight-card-value {
+            margin: 0;
+            font-size: 0.72rem;
+            color: var(--slate-muted);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .insight-card-dash {
+            align-self: flex-start;
+            font-size: 0.64rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 50px;
+            margin-top: auto;
+        }
+
+        .insight-card-locked {
+            border: 1px dashed #cbd5e1;
+            border-left: 3px dashed #cbd5e1;
+            background: #f8fafc;
+            box-shadow: none;
+        }
+
+        .insight-card-locked .insight-card-name,
+        .insight-card-locked .insight-card-desc {
+            color: #94a3b8;
+            font-style: italic;
         }
         
         .how-to-card {
@@ -1107,7 +1323,7 @@
             <div id="start-ribbon"></div>
             <img src="logo.png" alt="InfiniToyota logo" id="start-logo">
             <h3>Infini<span class="brand-accent">Toyota</span></h3>
-            <p class="start-tagline">Combine data insights to uncover new ones &mdash; race the clock and climb the leaderboard.</p>
+            <p class="start-tagline">Discover Customer 360 Insights.</p>
             <div id="mode-select">
                 <button type="button" class="mode-btn" data-mode="sandbox">
                     <span class="mode-icon">🧪</span>
@@ -1190,7 +1406,7 @@
 
     <div id="board-area">
         <div id="board">
-            <h2 id="board-title">Drop insights here to combine them</h2>
+            <h2 id="board-title">Combine business data to discover Customer 360 insights</h2>
             <div id="discovery-toast">
                 <span class="toast-label">✨ New Insight</span>
                 <span class="toast-name" id="toast-name"></span>
@@ -1225,16 +1441,31 @@
     <div id="timeup-overlay">
         <div id="timeup-card">
             <h3>🏁 Time's Up!</h3>
-            <p class="timeup-subtitle">Here's what you discovered this round.</p>
-            <div id="timeup-summary"></div>
-            <div class="timeup-score-box">
-                <p class="timeup-score-label">Your Score</p>
-                <div class="timeup-score-value" id="timeup-score">0</div>
-                <p id="lb-save-status"></p>
+            <p class="timeup-subtitle">Your round, at a glance.</p>
+
+            <div id="timeup-kpis">
+                <div class="stat-tile stat-tile-score">
+                    <p class="stat-label">Final score</p>
+                    <div class="stat-value" id="timeup-score">0</div>
+                </div>
+                <div class="stat-tile">
+                    <p class="stat-label">Insights found</p>
+                    <div class="stat-value"><span id="timeup-found">0</span><span class="stat-sub">/<span id="timeup-total">0</span></span></div>
+                </div>
+                <div class="stat-tile">
+                    <p class="stat-label">Avg. speed</p>
+                    <div class="stat-value" id="timeup-avg">—</div>
+                    <p class="stat-hint">per insight</p>
+                </div>
             </div>
+            <p id="lb-save-status"></p>
+
+            <h4 class="timeup-section-title">Insights by dashboard</h4>
+            <div id="timeup-dashboards"></div>
+
             <div class="timeup-actions">
+                <button id="timeup-tree-btn" class="pill-btn">📖 Insight Details</button>
                 <button id="timeup-leaderboard-btn" class="pill-btn">View Leaderboard</button>
-                <button id="timeup-tree-btn" class="pill-btn">View Discovery Tree</button>
                 <button id="timeup-close-btn" class="pill-btn pill-btn-danger">Close</button>
             </div>
         </div>
@@ -1243,7 +1474,7 @@
     <div id="modal-overlay">
         <div id="modal-card">
             <div class="modal-header">
-                <h3>Discovery Architecture</h3>
+                <h3>📖 Discovery Tree &mdash; Insight Details</h3>
                 <button class="close-btn" id="close-modal">✕</button>
             </div>
             <div id="tree-container"></div>
@@ -1261,43 +1492,70 @@
     </div>
 
     <script>
-        const STARTING_ITEMS = [
-            "Outlet Data",
-            "Dealer Data",
-            "Transaction Data",
-            "Customer Data",
-            "Vehicle Data"
+        // --- BASIC DATA: available to the player from the start of the game ---
+        const BASIC_DATA = [
+            "Customer",
+            "Customer Profile",
+            "Location",
+            "Dealer",
+            "Vehicle",
+            "Leads",
+            "Digital",
+            "Digital Interest",
+            "Purchase",
+            "Financing",
+            "Insurance",
+            "Service",
+            "Warranty",
+            "Date",
+            "Schedule",
+            "M-Toyota"
         ];
 
-        const RECIPES = {
-            // --- THE CANON (Your original Tier 2s) ---
-            "Customer Data+Vehicle Data": "Vehicle Ownership Data",                // T1 + T1 = T2
-            "Dealer Data+Outlet Data": "Network Data",                             // T1 + T1 = T2
-            "Customer Data+Transaction Data": "Purchase History",                  // T1 + T1 = T2
+        // --- INSIGHT CATALOG (from the real data catalog) ---
+        // level: BI = Basic Insight, EI = Enhanced Insight, C360 = Customer 360 Insight
+        // question: the Business Question shown as a hint while the insight is undiscovered
+        // dashboard: which dashboard the insight belongs to (BI only)
+        const INSIGHT_CATALOG = [
+            { id: "BI-001", level: "BI", dashboard: "Customer", question: "Who are our customers?", cards: ["Customer", "Customer Profile"], result: "Customer Demographics", description: "Discover customer demographic profile.", value: "Understand customer segmentation." },
+            { id: "BI-002", level: "BI", dashboard: "Customer", question: "Where do our customers live?", cards: ["Customer", "Location"], result: "Customer Distribution", description: "Discover customer domicile distribution.", value: "Support regional planning." },
+            { id: "BI-003", level: "BI", dashboard: "Customer", question: "Which dealer knows the customer best?", cards: ["Customer", "Dealer"], result: "Last Outlet Binding", description: "Identify the dealer with the strongest customer relationship.", value: "Improve dealer engagement." },
+            { id: "BI-004", level: "BI", dashboard: "Customer", question: "How many vehicles does each customer own?", cards: ["Customer", "Vehicle"], result: "Vehicle Ownership", description: "Discover customer vehicle ownership.", value: "Identify high-value customers." },
+            { id: "BI-005", level: "BI", dashboard: "Customer", question: "What type of customer is this?", cards: ["Customer", "Vehicle"], result: "Customer Type", description: "Identify Retail or Fleet customers.", value: "Support customer segmentation." },
+            { id: "BI-006", level: "BI", dashboard: "Sales", question: "How many customers have leads?", cards: ["Customer", "Leads"], result: "Leads Coverage", description: "Discover customer lead coverage.", value: "Measure lead generation." },
+            { id: "BI-007", level: "BI", dashboard: "Sales", question: "Where do leads come from?", cards: ["Leads", "Digital"], result: "Lead Source", description: "Discover customer acquisition channels.", value: "Improve marketing performance." },
+            { id: "BI-008", level: "BI", dashboard: "Sales", question: "Which Toyota model is purchased the most?", cards: ["Purchase", "Vehicle"], result: "Top Model Purchased", description: "Discover popular Toyota models.", value: "Understand market demand." },
+            { id: "BI-009", level: "BI", dashboard: "Sales", question: "Which segment is purchased the most?", cards: ["Purchase", "Vehicle"], result: "Top Segment Purchased", description: "Discover popular vehicle segments.", value: "Support product strategy." },
+            { id: "BI-010", level: "BI", dashboard: "Sales", question: "Do customers buy by cash or credit?", cards: ["Purchase", "Financing"], result: "Purchase Method", description: "Discover payment preference.", value: "Improve sales planning." },
+            { id: "BI-011", level: "BI", dashboard: "Sales", question: "Which insurance is selected?", cards: ["Purchase", "Insurance"], result: "Insurance Status", description: "Discover insurance preference.", value: "Support insurance partnership." },
+            { id: "BI-012", level: "BI", dashboard: "Sales", question: "Are customers upgrading or downgrading?", cards: ["Vehicle", "Purchase"], result: "Upgrade Opportunity", description: "Compare previous and current vehicle purchase.", value: "Understand purchase movement." },
+            { id: "BI-013", level: "BI", dashboard: "Sales", question: "Does customer interest match ownership?", cards: ["Vehicle", "Digital Interest"], result: "Owned vs Interested Model", description: "Compare owned model with interested model.", value: "Predict next purchase." },
+            { id: "BI-014", level: "BI", dashboard: "Aftersales", question: "Are customers servicing their vehicles?", cards: ["Vehicle", "Service"], result: "Service Coverage", description: "Discover service participation.", value: "Improve aftersales engagement." },
+            { id: "BI-015", level: "BI", dashboard: "Aftersales", question: "Is warranty still active?", cards: ["Vehicle", "Warranty"], result: "Warranty Remaining", description: "Discover warranty status.", value: "Support warranty campaign." },
+            { id: "BI-016", level: "BI", dashboard: "Aftersales", question: "Are customers loyal?", cards: ["Customer", "Service"], result: "Retention Status", description: "Measure service loyalty.", value: "Improve retention." },
+            { id: "BI-017", level: "BI", dashboard: "Aftersales", question: "When was the last service?", cards: ["Service", "Date"], result: "Service Recency", description: "Discover latest service activity.", value: "Identify inactive customers." },
+            { id: "BI-018", level: "BI", dashboard: "Aftersales", question: "Do customers service on time?", cards: ["Service", "Schedule"], result: "Customer Punctuality", description: "Measure service punctuality.", value: "Improve reminder program." },
+            { id: "BI-019", level: "BI", dashboard: "Digital", question: "How active are customers digitally?", cards: ["Customer", "Digital"], result: "Digital Activity", description: "Measure digital engagement.", value: "Improve digital adoption." },
+            { id: "BI-020", level: "BI", dashboard: "Digital", question: "Are customers using M-Toyota?", cards: ["Customer", "M-Toyota"], result: "M-Toyota Adoption", description: "Measure M-Toyota utilization.", value: "Improve app engagement." },
 
-            // --- NEW TIER 2s: The Horizontal Joins ---
-            "Vehicle Data+Transaction Data": "Vehicle Market Valuation",           // T1 + T1 = T2 (Depreciation & Book Value)
-            "Vehicle Data+Outlet Data": "Lot Inventory Data",                      // T1 + T1 = T2 (What physical metal is sitting where)
-            "Customer Data+Outlet Data": "Geo-Catchment Demographics",             // T1 + T1 = T2 (Drive-time radiuses to our shops)
-            "Dealer Data+Transaction Data": "Dealer Margin Profile",               // T1 + T1 = T2 (Who sells at MSRP vs. who gouges)
+            { id: "EI-001", level: "EI", dashboard: "", question: "", cards: ["Customer Demographics", "Customer Distribution"], result: "Regional Customer Profile", description: "Understand customer demographics by region.", value: "Improve regional strategy." },
+            { id: "EI-002", level: "EI", dashboard: "", question: "", cards: ["Vehicle Ownership", "Customer Distribution"], result: "Regional Ownership Pattern", description: "Identify regions with high vehicle ownership.", value: "Regional campaign planning." },
+            { id: "EI-003", level: "EI", dashboard: "", question: "", cards: ["Last Outlet Binding", "Service Coverage"], result: "Dealer Service Engagement", description: "Measure dealer relationship and service activity.", value: "Improve dealer performance." },
+            { id: "EI-004", level: "EI", dashboard: "", question: "", cards: ["Lead Source", "Top Model Purchased"], result: "Lead Conversion Insight", description: "Understand which channels generate vehicle sales.", value: "Improve marketing ROI." },
+            { id: "EI-005", level: "EI", dashboard: "", question: "", cards: ["Purchase Method", "Insurance Status"], result: "Purchase Preference", description: "Understand customer buying preference.", value: "Improve financing strategy." },
+            { id: "EI-006", level: "EI", dashboard: "", question: "", cards: ["Upgrade Opportunity", "Owned vs Interested Model"], result: "Purchase Readiness", description: "Identify customers ready for upgrade.", value: "Increase conversion opportunity." },
+            { id: "EI-007", level: "EI", dashboard: "", question: "", cards: ["Warranty Remaining", "Service Coverage"], result: "Warranty Service Opportunity", description: "Identify warranty customers missing service.", value: "Improve retention." },
+            { id: "EI-008", level: "EI", dashboard: "", question: "", cards: ["Retention Status", "Service Recency"], result: "Customer Loyalty", description: "Understand long-term loyal customers.", value: "Loyalty campaign." },
+            { id: "EI-009", level: "EI", dashboard: "", question: "", cards: ["Customer Punctuality", "Service Coverage"], result: "Service Behavior", description: "Analyze customer service habits.", value: "Improve aftersales program." },
+            { id: "EI-010", level: "EI", dashboard: "", question: "", cards: ["Digital Activity", "M-Toyota Adoption"], result: "Digital Engagement", description: "Measure digital ecosystem usage.", value: "Improve digital experience." },
 
-            // --- THE CANON (Your original Tier 3) ---
-            "Vehicle Ownership Data+Transaction Data": "Customer Behavior Data",   // T2 + T1 = T3
+            { id: "C360-001", level: "C360", dashboard: "", question: "", cards: ["Regional Ownership Pattern", "Lead Conversion Insight"], result: "Market Opportunity", description: "Identify regions with the highest business potential.", value: "Support expansion strategy." },
+            { id: "C360-002", level: "C360", dashboard: "", question: "", cards: ["Purchase Readiness", "Digital Engagement"], result: "Next Best Offer", description: "Recommend the next Toyota model.", value: "Improve campaign targeting." },
+            { id: "C360-003", level: "C360", dashboard: "", question: "", cards: ["Customer Loyalty", "Dealer Service Engagement"], result: "Customer Retention Strategy", description: "Identify customers at risk of churn.", value: "Improve customer retention." },
+            { id: "C360-004", level: "C360", dashboard: "", question: "", cards: ["Regional Customer Profile", "Market Opportunity"], result: "Customer 360 Intelligence", description: "Combine customer, sales, and location insights.", value: "Enable Customer 360 analysis." }
+        ];
 
-            // --- NEW TIER 3s: The Contextual Layers ---
-            "Lot Inventory Data+Transaction Data": "Inventory Velocity Index",     // T2 + T1 = T3 (Days-on-lot / Sell-through rates)
-            "Vehicle Ownership Data+Outlet Data": "Service Bay Retention",         // T2 + T1 = T3 (Do they come back to us for oil changes?)
-            "Purchase History+Vehicle Market Valuation": "Customer Equity Position",// T2 + T2 = T3 (Are they underwater on their 84-month loan?)
-            "Purchase History+Customer Data": "Customer Lifetime Value (LTV)",     // T2 + T1 = T3 (Total gross profit pulled from this human)
-
-            // --- THE CANON (Your original Tier 4 - Gold!) ---
-            "Customer Behavior Data+Network Data": "Enterprise Master Profile",    // T3 + T2 = T4
-
-            // --- NEW TIER 4s: The Predictive Targets ---
-            "Inventory Velocity Index+Dealer Margin Profile": "Stock Allocation Engine", // T3 + T2 = T4 (Where to ship the fast-moving hybrids)
-            "Customer Equity Position+Customer Lifetime Value (LTV)": "Conquest & Upgrade Score", // T3 + T3 = T4 (The "Call them on Tuesday" list)
-            "Service Bay Retention+Vehicle Market Valuation": "Service Defection Risk", // T3 + T2 = T4 (Predicting when they start going to Jiffy Lube)
-        };
+        const STARTING_ITEMS = BASIC_DATA;
 
         // 2. SETUP & TIER MATH ENGINE
         const inventoryContainer = document.getElementById('base-items-container');
@@ -1320,63 +1578,113 @@
         let gameMode = 'challenge';   // 'sandbox' | 'challenge'
         let gameStartTime = null;
         let lastDiscoveryTime = null;
+        let discoveryLog = [];        // { name, at } per new discovery — feeds the end-of-round summary
 
+        // A recipe key can map to MULTIPLE insights (e.g. Customer+Vehicle unlocks both
+        // Vehicle Ownership and Customer Type). Combining discovers the next undiscovered one.
         const CLEANED_RECIPES = {};
-        Object.keys(RECIPES).forEach(key => {
-            const sortedKey = key.split('+').sort().join('+');
-            CLEANED_RECIPES[sortedKey] = RECIPES[key];
+        INSIGHT_CATALOG.forEach(entry => {
+            const sortedKey = entry.cards.slice().sort().join('+');
+            if (!CLEANED_RECIPES[sortedKey]) CLEANED_RECIPES[sortedKey] = [];
+            CLEANED_RECIPES[sortedKey].push(entry);
         });
 
-        // --- THE TIER CALCULATOR ---
+        // --- LEVEL CATEGORIZATION (replaces the computed tier system) ---
+        // 1 = Basic Data, 2 = Basic Insight (BI), 3 = Enhanced Insight (EI), 4 = Customer 360 (C360)
+        const LEVEL_TIER = { BI: 2, EI: 3, C360: 4 };
         const CONCEPT_TIERS = {};
-        function calculateAllTiers() {
-            STARTING_ITEMS.forEach(item => CONCEPT_TIERS[item] = 1);
+        BASIC_DATA.forEach(item => CONCEPT_TIERS[item] = 1);
+        INSIGHT_CATALOG.forEach(entry => CONCEPT_TIERS[entry.result] = LEVEL_TIER[entry.level]);
 
-            let unstable = true;
-            let infiniteLoopGuard = 0;
+        const INSIGHT_BY_NAME = {};
+        INSIGHT_CATALOG.forEach(entry => INSIGHT_BY_NAME[entry.result] = entry);
 
-            while (unstable && infiniteLoopGuard < 100) {
-                unstable = false;
-                infiniteLoopGuard++;
+        const ALL_UNIQUE = [...BASIC_DATA, ...INSIGHT_CATALOG.map(entry => entry.result)];
 
-                Object.keys(CLEANED_RECIPES).forEach(formula => {
-                    const result = CLEANED_RECIPES[formula];
-                    const [ing1, ing2] = formula.split('+');
-
-                    if (CONCEPT_TIERS[ing1] && CONCEPT_TIERS[ing2]) {
-                        const computedTier = Math.max(CONCEPT_TIERS[ing1], CONCEPT_TIERS[ing2]) + 1;
-                        const assignedTier = Math.min(computedTier, 4); 
-
-                        if (CONCEPT_TIERS[result] !== assignedTier) {
-                            CONCEPT_TIERS[result] = assignedTier;
-                            unstable = true; 
-                        }
-                    }
-                });
-            }
-        }
-        
-        calculateAllTiers();
-
-        const RECIPE_PARENTS = {};
-        Object.keys(CLEANED_RECIPES).forEach(formula => {
-            const result = CLEANED_RECIPES[formula];
-            RECIPE_PARENTS[result] = formula.split('+');
-        });
-
-        const ALL_ITEMS = [...STARTING_ITEMS, ...Object.values(CLEANED_RECIPES)];
-        const ALL_UNIQUE = [...new Set(ALL_ITEMS)];
-
-        // --- NEW: STRICTLY EXCLUDE TIER 1 FROM THE TOTAL SCORE ---
+        // --- STRICTLY EXCLUDE BASIC DATA FROM THE TOTAL SCORE ---
         const DERIVED_INSIGHTS_ONLY = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) > 1);
         totalEl.textContent = DERIVED_INSIGHTS_ONLY.length;
 
         const TIER_META = {
-            1: { label: 'Tier 1: Source', color: 'var(--t1-base)', light: 'var(--t1-light)' },
-            2: { label: 'Tier 2: Standard', color: 'var(--t2-base)', light: 'var(--t2-light)' },
-            3: { label: 'Tier 3: Advanced', color: 'var(--t3-base)', light: 'var(--t3-light)' },
-            4: { label: 'Tier 4: Master',   color: 'var(--t4-base)', light: 'var(--t4-light)' },
+            1: { label: 'Basic Data',        code: 'Data', color: 'var(--t1-base)', light: 'var(--t1-light)' },
+            2: { label: 'Basic Insights',    code: 'BI',   color: 'var(--t2-base)', light: 'var(--t2-light)' },
+            3: { label: 'Enhanced Insights', code: 'EI',   color: 'var(--t3-base)', light: 'var(--t3-light)' },
+            4: { label: 'Customer 360',      code: 'C360', color: 'var(--t4-base)', light: 'var(--t4-light)' },
         };
+
+        // --- CARD VISUAL IDENTITY: emoji + data-category color, independent of tier ---
+        const CATEGORY_META = {
+            customer:   { color: 'var(--cat-customer)',   light: 'var(--cat-customer-light)' },
+            vehicle:    { color: 'var(--cat-vehicle)',    light: 'var(--cat-vehicle-light)' },
+            sales:      { color: 'var(--cat-sales)',      light: 'var(--cat-sales-light)' },
+            aftersales: { color: 'var(--cat-aftersales)', light: 'var(--cat-aftersales-light)' },
+            digital:    { color: 'var(--cat-digital)',    light: 'var(--cat-digital-light)' },
+            master:     { color: 'var(--cat-master)',     light: 'var(--cat-master-light)' },
+        };
+
+        const CARD_META = {
+            // Basic Data
+            "Customer":               { emoji: '👤', category: 'customer' },
+            "Customer Profile":       { emoji: '👤', category: 'customer' },
+            "Location":                { emoji: '📍', category: 'customer' },
+            "Dealer":                  { emoji: '🏢', category: 'sales' },
+            "Vehicle":                 { emoji: '🚗', category: 'vehicle' },
+            "Leads":                   { emoji: '🎯', category: 'sales' },
+            "Digital":                 { emoji: '🌐', category: 'digital' },
+            "Digital Interest":       { emoji: '🌐', category: 'digital' },
+            "Purchase":                { emoji: '💰', category: 'sales' },
+            "Financing":               { emoji: '🔑', category: 'sales' },
+            "Insurance":               { emoji: '📋', category: 'sales' },
+            "Service":                 { emoji: '🔧', category: 'aftersales' },
+            "Warranty":                { emoji: '🛡️', category: 'vehicle' },
+            "Date":                    { emoji: '📅', category: 'aftersales' },
+            "Schedule":                { emoji: '🗓️', category: 'aftersales' },
+            "M-Toyota":                { emoji: '📲', category: 'digital' },
+
+            // Basic Insights (BI)
+            "Customer Demographics":       { emoji: '👤', category: 'customer' },
+            "Customer Distribution":       { emoji: '📍', category: 'customer' },
+            "Last Outlet Binding":         { emoji: '🏢', category: 'sales' },
+            "Vehicle Ownership":           { emoji: '🛡️', category: 'vehicle' },
+            "Customer Type":               { emoji: '👤', category: 'customer' },
+            "Leads Coverage":              { emoji: '🎯', category: 'sales' },
+            "Lead Source":                 { emoji: '🎯', category: 'sales' },
+            "Top Model Purchased":         { emoji: '🚗', category: 'vehicle' },
+            "Top Segment Purchased":       { emoji: '🚗', category: 'vehicle' },
+            "Purchase Method":             { emoji: '💰', category: 'sales' },
+            "Insurance Status":            { emoji: '📋', category: 'sales' },
+            "Upgrade Opportunity":         { emoji: '🚗', category: 'vehicle' },
+            "Owned vs Interested Model":   { emoji: '🚗', category: 'vehicle' },
+            "Service Coverage":            { emoji: '🔧', category: 'aftersales' },
+            "Warranty Remaining":          { emoji: '🛡️', category: 'vehicle' },
+            "Retention Status":            { emoji: '🔧', category: 'aftersales' },
+            "Service Recency":             { emoji: '🔧', category: 'aftersales' },
+            "Customer Punctuality":        { emoji: '🔧', category: 'aftersales' },
+            "Digital Activity":            { emoji: '🌐', category: 'digital' },
+            "M-Toyota Adoption":           { emoji: '📲', category: 'digital' },
+
+            // Enhanced Insights (EI)
+            "Regional Customer Profile":       { emoji: '📍', category: 'customer' },
+            "Regional Ownership Pattern":      { emoji: '🛡️', category: 'vehicle' },
+            "Dealer Service Engagement":       { emoji: '🔧', category: 'aftersales' },
+            "Lead Conversion Insight":         { emoji: '🎯', category: 'sales' },
+            "Purchase Preference":             { emoji: '💰', category: 'sales' },
+            "Purchase Readiness":              { emoji: '💰', category: 'sales' },
+            "Warranty Service Opportunity":    { emoji: '🔧', category: 'aftersales' },
+            "Customer Loyalty":                { emoji: '🔧', category: 'aftersales' },
+            "Service Behavior":                { emoji: '🔧', category: 'aftersales' },
+            "Digital Engagement":              { emoji: '🌐', category: 'digital' },
+
+            // Customer 360 (C360)
+            "Market Opportunity":              { emoji: '💰', category: 'sales' },
+            "Next Best Offer":                 { emoji: '🎯', category: 'sales' },
+            "Customer Retention Strategy":     { emoji: '🔧', category: 'aftersales' },
+            "Customer 360 Intelligence":       { emoji: '🏆', category: 'master' },
+        };
+
+        function getCardMeta(name) {
+            return CARD_META[name] || { emoji: '📄', category: 'customer' };
+        }
 
         function updateProgress() {
             // --- NEW: STRICTLY EXCLUDE TIER 1 FROM THE CURRENT SCORE ---
@@ -1402,9 +1710,11 @@
                         const el = document.createElement('div');
                         el.className = 'item';
                         el.draggable = true;
-                        el.textContent = name;
+                        const meta = getCardMeta(name);
+                        el.textContent = `${meta.emoji} ${name}`;
                         el.dataset.name = name;
                         el.dataset.tier = tier;
+                        el.dataset.category = meta.category;
                         el.dataset.source = 'inventory';
                         list.appendChild(el);
 
@@ -1458,9 +1768,11 @@
                         const el = document.createElement('div');
                         el.className = 'item';
                         el.draggable = true;
-                        el.textContent = name;
+                        const meta = getCardMeta(name);
+                        el.textContent = `${meta.emoji} ${name}`;
                         el.dataset.name = name;
                         el.dataset.tier = tier;
+                        el.dataset.category = meta.category;
                         el.dataset.source = 'inventory';
                         list.appendChild(el);
                     });
@@ -1477,25 +1789,33 @@
         const CLUE_VISIBLE_MS = 8000;
         let clueHideTimeout = null;
 
-        function pickClueIngredient() {
-            // Recipes the player could make right now but hasn't: result is
-            // undiscovered while both ingredients are already unlocked.
-            const craftableNow = Object.keys(RECIPE_PARENTS).filter(result =>
-                !discoveredItems.has(result) &&
-                RECIPE_PARENTS[result].every(ing => discoveredItems.has(ing))
+        const clueTitle = document.querySelector('#clue-bubble .clue-title');
+
+        function pickClueInsight() {
+            // Insights the player could make right now but hasn't: result is
+            // undiscovered while both required cards are already unlocked.
+            const craftableNow = INSIGHT_CATALOG.filter(entry =>
+                !discoveredItems.has(entry.result) &&
+                entry.cards.every(card => discoveredItems.has(card))
             );
             if (craftableNow.length === 0) return null;
-
-            const result = craftableNow[Math.floor(Math.random() * craftableNow.length)];
-            const ingredients = RECIPE_PARENTS[result];
-            return ingredients[Math.floor(Math.random() * ingredients.length)];
+            return craftableNow[Math.floor(Math.random() * craftableNow.length)];
         }
 
         function showClue() {
-            const knownIngredient = pickClueIngredient();
-            if (!knownIngredient) return;
+            const entry = pickClueInsight();
+            if (!entry) return;
 
-            clueText.textContent = `${knownIngredient} + ? = New Insight`;
+            if (entry.question) {
+                // BI insights carry a real Business Question as their hint
+                clueTitle.textContent = '💼 Business Question';
+                clueText.textContent = entry.question;
+            } else {
+                // EI / C360 insights have no question — hint one required card instead
+                clueTitle.textContent = '🔧 Pit Crew Tip';
+                const knownIngredient = entry.cards[Math.floor(Math.random() * entry.cards.length)];
+                clueText.textContent = `${knownIngredient} + ? = New Insight`;
+            }
             clueBubble.classList.remove('show');
             // Force a reflow so re-triggering replays the pop animation
             void clueBubble.offsetWidth;
@@ -1515,6 +1835,7 @@
         function resetGame() {
             document.querySelectorAll('.board-item').forEach(item => item.remove());
             discoveredItems = new Set(STARTING_ITEMS);
+            discoveryLog = [];
             failedAttempts = 0;
             hideClue();
             initInventory();
@@ -1672,11 +1993,15 @@
                 let resultName;
                 let isNewDiscovery = false;
                 let isFailedMerge = false;
-                if (CLEANED_RECIPES[combinedKey]) {
-                    resultName = CLEANED_RECIPES[combinedKey];
+                const matchingInsights = CLEANED_RECIPES[combinedKey];
+                if (matchingInsights) {
+                    // A pair can unlock several insights — discover the next undiscovered one
+                    const entry = matchingInsights.find(m => !discoveredItems.has(m.result)) || matchingInsights[0];
+                    resultName = entry.result;
                     if (!discoveredItems.has(resultName)) {
                         discoveredItems.add(resultName);
                         lastDiscoveryTime = Date.now();
+                        discoveryLog.push({ name: resultName, at: lastDiscoveryTime });
                         isNewDiscovery = true;
                     }
                     failedAttempts = 0;
@@ -1725,12 +2050,14 @@
             const el = document.createElement('div');
             el.className = 'board-item';
             el.draggable = true;
-            el.textContent = name;
+            const meta = getCardMeta(name);
+            el.textContent = `${meta.emoji} ${name}`;
             el.dataset.name = name;
             el.dataset.source = 'board';
-            
+            el.dataset.category = meta.category;
+
             const tier = CONCEPT_TIERS[name] || 1;
-            el.dataset.tier = tier; 
+            el.dataset.tier = tier;
 
             el.style.left = left;
             el.style.top = top;
@@ -1820,38 +2147,96 @@
             return styles[tier] || styles[1];
         }
 
+        // Dashboard name → data-category color key (they share the same identity system)
+        const DASHBOARD_CATEGORY = {
+            'Customer':   'customer',
+            'Sales':      'sales',
+            'Aftersales': 'aftersales',
+            'Digital':    'digital'
+        };
+
+        function renderInsightCard(entry) {
+            const tier = CONCEPT_TIERS[entry.result] || 1;
+            const levelBadge = `<span class="tier-badge" style="${getTierBadgeStyle(tier)}">${TIER_META[tier].code}</span>`;
+            const card = document.createElement('div');
+
+            if (!discoveredItems.has(entry.result)) {
+                card.className = 'insight-card insight-card-locked';
+                card.innerHTML = `
+                    <div class="insight-card-head">
+                        <span class="insight-card-name">🔒 ???</span>
+                        ${levelBadge}
+                    </div>
+                    <p class="insight-card-desc">Undiscovered — keep combining to reveal this insight.</p>
+                `;
+                return card;
+            }
+
+            const resultMeta = getCardMeta(entry.result);
+            const accent = CATEGORY_META[resultMeta.category];
+
+            // When this insight was found, in seconds from round start
+            const logEntry = discoveryLog.find(d => d.name === entry.result);
+            const timeHtml = (logEntry && gameStartTime)
+                ? `<span class="insight-card-time">⏱ ${((logEntry.at - gameStartTime) / 1000).toFixed(0)}s</span>`
+                : '';
+
+            const chipsHtml = entry.cards.map(ing => {
+                const ingMeta = getCardMeta(ing);
+                const ingCat = CATEGORY_META[ingMeta.category];
+                return `<span class="recipe-chip" style="border-color:${ingCat.color};background:${ingCat.light}">${ingMeta.emoji} ${ing}</span>`;
+            }).join('<span class="recipe-plus">+</span>');
+
+            const dashCat = CATEGORY_META[DASHBOARD_CATEGORY[entry.dashboard]];
+            const dashboardHtml = dashCat
+                ? `<span class="insight-card-dash" style="color:${dashCat.color};background:${dashCat.light}">📊 ${entry.dashboard} Dashboard</span>`
+                : '';
+
+            card.className = 'insight-card';
+            card.style.borderLeftColor = accent.color;
+            card.innerHTML = `
+                <div class="insight-card-head">
+                    <span class="insight-card-name">${resultMeta.emoji} ${entry.result}</span>
+                    <span class="insight-card-meta">${timeHtml}${levelBadge}</span>
+                </div>
+                <div class="insight-card-recipe">${chipsHtml}</div>
+                <p class="insight-card-desc">${entry.description}</p>
+                <p class="insight-card-value">💡 ${entry.value}</p>
+                ${dashboardHtml}
+            `;
+            return card;
+        }
+
         function renderTree() {
             treeContainer.innerHTML = '';
-            const craftedDiscoveries = Object.keys(RECIPE_PARENTS).filter(item => discoveredItems.has(item));
 
-            if (craftedDiscoveries.length === 0) {
-                treeContainer.innerHTML = `<div class="empty-tree">🌱 No insight combinations discovered yet.<br>Combine source tables on the canvas to unlock recipes!</div>`;
+            const anyDiscovered = INSIGHT_CATALOG.some(entry => discoveredItems.has(entry.result));
+            if (!anyDiscovered) {
+                treeContainer.innerHTML = `<div class="empty-tree">🌱 No insights discovered yet.<br>Combine basic data cards on the canvas to unlock insights!</div>`;
                 return;
             }
 
-            craftedDiscoveries.forEach(resultItem => {
-                const nodeEl = document.createElement('div');
-                nodeEl.className = 'tree-node';
-                
-                const resultTier = CONCEPT_TIERS[resultItem] || 1;
-                const ingredients = RECIPE_PARENTS[resultItem];
+            [2, 3, 4].forEach(tier => {
+                const meta = TIER_META[tier];
+                const entries = INSIGHT_CATALOG.filter(entry => (CONCEPT_TIERS[entry.result] || 1) === tier);
+                const found = entries.filter(entry => discoveredItems.has(entry.result)).length;
 
-                let childrenHtml = ingredients.map(ing => {
-                    const ingTier = CONCEPT_TIERS[ing] || 1;
-                    const badgeStyle = getTierBadgeStyle(ingTier);
-                    return `<li class="tree-child-item"><span>${ing}</span> <span class="tier-badge" style="${badgeStyle}">Tier ${ingTier}</span></li>`;
-                }).join('');
-
-                const parentStyle = getTierBadgeStyle(resultTier);
-
-                nodeEl.innerHTML = `
-                    <div class="tree-parent" style="${parentStyle}">${resultItem} (Tier ${resultTier})</div>
-                    <ul class="tree-children">
-                        ${childrenHtml}
-                    </ul>
+                const section = document.createElement('div');
+                section.className = 'tree-section';
+                section.innerHTML = `
+                    <div class="tree-section-header">
+                        <span class="tree-section-label">
+                            <span class="tier-dot" style="background:${meta.color}"></span>
+                            ${meta.label}
+                        </span>
+                        <span class="tier-counter" style="background:${meta.light};color:${meta.color}">${found}/${entries.length}</span>
+                    </div>
+                    <div class="tree-grid"></div>
                 `;
 
-                treeContainer.appendChild(nodeEl);
+                const grid = section.querySelector('.tree-grid');
+                entries.forEach(entry => grid.appendChild(renderInsightCard(entry)));
+                treeContainer.appendChild(section);
             });
         }
 
@@ -1902,11 +2287,14 @@
 
         // --- TIME'S UP MODAL ---
         const timeupOverlay = document.getElementById('timeup-overlay');
-        const timeupSummary = document.getElementById('timeup-summary');
+        const timeupDashboardsEl = document.getElementById('timeup-dashboards');
         const timeupTreeBtn = document.getElementById('timeup-tree-btn');
         const timeupCloseBtn = document.getElementById('timeup-close-btn');
 
         const timeupScoreEl = document.getElementById('timeup-score');
+        const timeupFoundEl = document.getElementById('timeup-found');
+        const timeupTotalEl = document.getElementById('timeup-total');
+        const timeupAvgEl = document.getElementById('timeup-avg');
         const lbSaveStatusEl = document.getElementById('lb-save-status');
 
         function computeGameResult() {
@@ -1936,10 +2324,14 @@
             // 4. Final score is the sum of both (rounded to nearest integer)
             const score = Math.round(baseScore + timeBonus);
 
-            return { 
-                foundInsights, 
-                totalInsights, 
-                durationSeconds, 
+            // Average discovery speed: seconds elapsed per insight found
+            const avgSeconds = foundInsights > 0 ? durationSeconds / foundInsights : 0;
+
+            return {
+                foundInsights,
+                totalInsights,
+                durationSeconds,
+                avgSeconds,
                 score,
                 baseScore: Math.round(baseScore),
                 timeBonus: Math.round(timeBonus)
@@ -1968,29 +2360,44 @@
             }
         }
 
-        function showTimeUpModal() {
-            timeupSummary.innerHTML = '';
-            [1, 2, 3, 4].forEach(tier => {
-                const meta = TIER_META[tier];
-                const tierItems = ALL_UNIQUE.filter(name => (CONCEPT_TIERS[name] || 1) === tier);
-                const found = tierItems.filter(name => discoveredItems.has(name)).length;
+        // Buckets for the "insights by dashboard" distribution. EI/C360 insights have no
+        // dashboard in the catalog, so they roll up into one cross-dashboard bucket.
+        const DASHBOARD_BUCKETS = [
+            { dashboard: 'Customer',   label: 'Customer',        emoji: '👤', category: 'customer' },
+            { dashboard: 'Sales',      label: 'Sales',           emoji: '💰', category: 'sales' },
+            { dashboard: 'Aftersales', label: 'Aftersales',      emoji: '🔧', category: 'aftersales' },
+            { dashboard: 'Digital',    label: 'Digital',         emoji: '🌐', category: 'digital' },
+            { dashboard: '',           label: 'Enhanced & C360', emoji: '🏆', category: 'master' },
+        ];
+
+        function renderDashboardDistribution() {
+            timeupDashboardsEl.innerHTML = '';
+            DASHBOARD_BUCKETS.forEach(bucket => {
+                const items = INSIGHT_CATALOG.filter(entry => entry.dashboard === bucket.dashboard);
+                const found = items.filter(entry => discoveredItems.has(entry.result)).length;
+                const meta = CATEGORY_META[bucket.category];
+                const pct = items.length ? (found / items.length) * 100 : 0;
 
                 const row = document.createElement('div');
-                row.className = 'timeup-tier-row';
-                row.style.background = meta.light;
-                row.style.color = meta.color;
+                row.className = 'dash-row';
                 row.innerHTML = `
-                    <span class="timeup-tier-label">
-                        <span class="tier-dot" style="background:${meta.color}"></span>
-                        ${meta.label}
-                    </span>
-                    <span>${found}/${tierItems.length}</span>
+                    <span class="dash-label"><span class="dash-dot" style="background:${meta.color}"></span>${bucket.emoji} ${bucket.label}</span>
+                    <div class="dash-meter" style="background:${meta.light}"><div class="dash-fill" style="width:${pct}%;background:${meta.color}"></div></div>
+                    <span class="dash-count">${found}/${items.length}</span>
                 `;
-                timeupSummary.appendChild(row);
+                timeupDashboardsEl.appendChild(row);
             });
+        }
 
+        function showTimeUpModal() {
             const result = computeGameResult();
+
             timeupScoreEl.textContent = result.score.toLocaleString();
+            timeupFoundEl.textContent = result.foundInsights;
+            timeupTotalEl.textContent = result.totalInsights;
+            timeupAvgEl.textContent = result.foundInsights > 0 ? `${result.avgSeconds.toFixed(1)}s` : '—';
+
+            renderDashboardDistribution();
             submitScore(result);
             spawnConfetti(60, 4);
 
