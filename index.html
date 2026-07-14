@@ -1232,13 +1232,25 @@
             line-height: 1.4;
         }
 
+        .insight-card-dash-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        .insight-card-dash-label {
+            font-size: 0.64rem;
+            font-weight: 700;
+            color: var(--slate-muted);
+        }
+
         .insight-card-dash {
-            align-self: flex-start;
             font-size: 0.64rem;
             font-weight: 700;
             padding: 3px 9px;
             border-radius: 50px;
-            margin-top: auto;
         }
 
         .insight-card-locked {
@@ -1441,7 +1453,7 @@
     <div id="timeup-overlay">
         <div id="timeup-card">
             <h3>🏁 Time's Up!</h3>
-            <p class="timeup-subtitle">Your round, at a glance.</p>
+            <p class="timeup-subtitle">Customer 360 Summary</p>
 
             <div id="timeup-kpis">
                 <div class="stat-tile stat-tile-score">
@@ -1538,16 +1550,16 @@
             { id: "BI-019", level: "BI", dashboard: "Digital", question: "How active are customers digitally?", cards: ["Customer", "Digital"], result: "Digital Activity", description: "Measure digital engagement.", value: "Improve digital adoption." },
             { id: "BI-020", level: "BI", dashboard: "Digital", question: "Are customers using M-Toyota?", cards: ["Customer", "M-Toyota"], result: "M-Toyota Adoption", description: "Measure M-Toyota utilization.", value: "Improve app engagement." },
 
-            { id: "EI-001", level: "EI", dashboard: "", question: "", cards: ["Customer Demographics", "Customer Distribution"], result: "Regional Customer Profile", description: "Understand customer demographics by region.", value: "Improve regional strategy." },
-            { id: "EI-002", level: "EI", dashboard: "", question: "", cards: ["Vehicle Ownership", "Customer Distribution"], result: "Regional Ownership Pattern", description: "Identify regions with high vehicle ownership.", value: "Regional campaign planning." },
-            { id: "EI-003", level: "EI", dashboard: "", question: "", cards: ["Last Outlet Binding", "Service Coverage"], result: "Dealer Service Engagement", description: "Measure dealer relationship and service activity.", value: "Improve dealer performance." },
-            { id: "EI-004", level: "EI", dashboard: "", question: "", cards: ["Lead Source", "Top Model Purchased"], result: "Lead Conversion Insight", description: "Understand which channels generate vehicle sales.", value: "Improve marketing ROI." },
-            { id: "EI-005", level: "EI", dashboard: "", question: "", cards: ["Purchase Method", "Insurance Status"], result: "Purchase Preference", description: "Understand customer buying preference.", value: "Improve financing strategy." },
-            { id: "EI-006", level: "EI", dashboard: "", question: "", cards: ["Upgrade Opportunity", "Owned vs Interested Model"], result: "Purchase Readiness", description: "Identify customers ready for upgrade.", value: "Increase conversion opportunity." },
-            { id: "EI-007", level: "EI", dashboard: "", question: "", cards: ["Warranty Remaining", "Service Coverage"], result: "Warranty Service Opportunity", description: "Identify warranty customers missing service.", value: "Improve retention." },
-            { id: "EI-008", level: "EI", dashboard: "", question: "", cards: ["Retention Status", "Service Recency"], result: "Customer Loyalty", description: "Understand long-term loyal customers.", value: "Loyalty campaign." },
-            { id: "EI-009", level: "EI", dashboard: "", question: "", cards: ["Customer Punctuality", "Service Coverage"], result: "Service Behavior", description: "Analyze customer service habits.", value: "Improve aftersales program." },
-            { id: "EI-010", level: "EI", dashboard: "", question: "", cards: ["Digital Activity", "M-Toyota Adoption"], result: "Digital Engagement", description: "Measure digital ecosystem usage.", value: "Improve digital experience." },
+            { id: "EI-001", level: "EI", dashboard: "Customer Profile", question: "", cards: ["Customer Demographics", "Customer Distribution"], result: "Regional Customer Profile", description: "Understand customer demographics by region.", value: "Improve regional strategy." },
+            { id: "EI-002", level: "EI", dashboard: "Customer Profile", question: "", cards: ["Vehicle Ownership", "Customer Distribution"], result: "Regional Ownership Pattern", description: "Identify regions with high vehicle ownership.", value: "Regional campaign planning." },
+            { id: "EI-003", level: "EI", dashboard: "Customer 360", question: "", cards: ["Last Outlet Binding", "Service Coverage"], result: "Dealer Service Engagement", description: "Measure dealer relationship and service activity.", value: "Improve dealer performance." },
+            { id: "EI-004", level: "EI", dashboard: "Sales", question: "", cards: ["Lead Source", "Top Model Purchased"], result: "Lead Conversion Insight", description: "Understand which channels generate vehicle sales.", value: "Improve marketing ROI." },
+            { id: "EI-005", level: "EI", dashboard: "Sales", question: "", cards: ["Purchase Method", "Insurance Status"], result: "Purchase Preference", description: "Understand customer buying preference.", value: "Improve financing strategy." },
+            { id: "EI-006", level: "EI", dashboard: "Sales", question: "", cards: ["Upgrade Opportunity", "Owned vs Interested Model"], result: "Purchase Readiness", description: "Identify customers ready for upgrade.", value: "Increase conversion opportunity." },
+            { id: "EI-007", level: "EI", dashboard: "Aftersales", question: "", cards: ["Warranty Remaining", "Service Coverage"], result: "Warranty Service Opportunity", description: "Identify warranty customers missing service.", value: "Improve retention." },
+            { id: "EI-008", level: "EI", dashboard: "Aftersales", question: "", cards: ["Retention Status", "Service Recency"], result: "Customer Loyalty", description: "Understand long-term loyal customers.", value: "Loyalty campaign." },
+            { id: "EI-009", level: "EI", dashboard: "Aftersales", question: "", cards: ["Customer Punctuality", "Service Coverage"], result: "Service Behavior", description: "Analyze customer service habits.", value: "Improve aftersales program." },
+            { id: "EI-010", level: "EI", dashboard: "Digital", question: "", cards: ["Digital Activity", "M-Toyota Adoption"], result: "Digital Engagement", description: "Measure digital ecosystem usage.", value: "Improve digital experience." },
 
             { id: "C360-001", level: "C360", dashboard: "", question: "", cards: ["Regional Ownership Pattern", "Lead Conversion Insight"], result: "Market Opportunity", description: "Identify regions with the highest business potential.", value: "Support expansion strategy." },
             { id: "C360-002", level: "C360", dashboard: "", question: "", cards: ["Purchase Readiness", "Digital Engagement"], result: "Next Best Offer", description: "Recommend the next Toyota model.", value: "Improve campaign targeting." },
@@ -2189,7 +2201,7 @@
 
             const dashCat = CATEGORY_META[DASHBOARD_CATEGORY[entry.dashboard]];
             const dashboardHtml = dashCat
-                ? `<span class="insight-card-dash" style="color:${dashCat.color};background:${dashCat.light}">📊 ${entry.dashboard} Dashboard</span>`
+                ? `<div class="insight-card-dash-row"><span class="insight-card-dash-label">Source Dashboard:</span> <span class="insight-card-dash" style="color:${dashCat.color};background:${dashCat.light}">📊 ${entry.dashboard} Dashboard</span></div>`
                 : '';
 
             card.className = 'insight-card';
