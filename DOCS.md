@@ -84,7 +84,7 @@ After **3 failed combine attempts** (the no-match branch of the board's `drop` h
 
 ## 8. Leaderboard (Firebase)
 
-Ranks players by **score = (insights found ÷ total insights) × 100 × duration**, where *duration* is the seconds from game start to the **last insight discovered** (`gameStartTime` / `lastDiscoveryTime`). Computed in `computeGameResult()` when time runs out.
+Ranks players by **score = completionScore + efficiencyBonus**, computed in `computeGameResult()` when time runs out. `completionScore = (insights found ÷ total insights) × 5000` is the dominant term. `efficiencyBonus` is a small, capped pace tiebreaker — `0` unless at least `MIN_INSIGHTS_FOR_PACE_BONUS` (3) insights were found, otherwise scaled toward `BONUS_CAP` (80% of one insight's marginal value, so pace alone can never let fewer insights outscore more) by how close the average pace (`durationSeconds ÷ insights found`, where *duration* runs from game start to the **last insight discovered**) is to the `IDEAL_SECONDS_PER_INSIGHT` (6s) benchmark.
 
 - **Challenge mode only:** Sandbox rounds never reach `showTimeUpModal()` (no timer), so nothing is ever submitted from them.
 - **Name + division capture:** `#player-name-input` and `#division-select` on the Start card are both required in Challenge (red ring on whichever is missing); stored in `playerName` / `playerDivision`. The division LoV lives in the `#division-select` markup and must stay in sync with the allowlist in `firestore.rules`.

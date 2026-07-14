@@ -2309,35 +2309,43 @@
         const timeupAvgEl = document.getElementById('timeup-avg');
         const lbSaveStatusEl = document.getElementById('lb-save-status');
 
+        // Below this many finds, a fast single discovery is luck/noise, not a real "pace" —
+        // no efficiency bonus, and the Avg. speed stat hides its number too.
+        const MIN_INSIGHTS_FOR_PACE_BONUS = 3;
+        // Average seconds/insight that earns the full efficiency bonus.
+        const IDEAL_SECONDS_PER_INSIGHT = 6;
+
         function computeGameResult() {
             const foundInsights = [...discoveredItems].filter(name => (CONCEPT_TIERS[name] || 1) > 1).length;
             const totalInsights = DERIVED_INSIGHTS_ONLY.length;
-            
+
             // Duration = seconds from game start until the last insight was found
             const durationSeconds = (gameStartTime && lastDiscoveryTime)
                 ? (lastDiscoveryTime - gameStartTime) / 1000
                 : 0;
 
-            // Option B: Countdown Time Bonus Model
-            // 1. Set your maximum expected game duration (e.g., 300 seconds / 5 minutes)
-            const MAX_GAME_TIME = 300; 
+            // 1. Completion score is the dominant term: up to 5,000 points for finding
+            //    every insight. This alone decides ranking in the vast majority of cases.
+            const completionScore = (totalInsights > 0) ? (foundInsights / totalInsights) * 5000 : 0;
 
-            // 2. Base score rewards completion percentage (up to 5,000 points)
-            const baseScore = (totalInsights > 0) ? (foundInsights / totalInsights) * 5000 : 0;
+            // 2. Efficiency bonus is a small, capped pace tiebreaker — NOT a second scoring
+            //    axis. BONUS_CAP is pinned to 80% of one insight's marginal completion value
+            //    (5000 / totalInsights), so no amount of pace can ever let fewer insights
+            //    outscore more insights: finding one more insight is always worth more than
+            //    a perfect pace bonus. This holds automatically even if the catalog grows.
+            //    Gated on MIN_INSIGHTS_FOR_PACE_BONUS so a single lucky fast find (the
+            //    "find 1, then go idle" exploit) can't read as a meaningful pace at all.
+            const marginalInsightValue = (totalInsights > 0) ? (5000 / totalInsights) : 0;
+            const BONUS_CAP = 0.8 * marginalInsightValue;
 
-            // 3. Time bonus rewards speed: 10 points for every second saved under MAX_GAME_TIME.
-            //    Only awarded if at least one derived insight was found — otherwise there was
-            //    no discovery to be "fast" about, and durationSeconds defaults to 0 (which would
-            //    otherwise hand out a full 3000-point bonus for doing nothing).
-            const timeBonus = (foundInsights > 0)
-                ? Math.max(0, MAX_GAME_TIME - durationSeconds) * 10
+            const avgSeconds = foundInsights > 0 ? durationSeconds / foundInsights : 0;
+            const paceRatio = avgSeconds > 0 ? (IDEAL_SECONDS_PER_INSIGHT / avgSeconds) : 0;
+            const efficiencyBonus = (foundInsights >= MIN_INSIGHTS_FOR_PACE_BONUS)
+                ? Math.max(0, Math.min(1, paceRatio)) * BONUS_CAP
                 : 0;
 
-            // 4. Final score is the sum of both (rounded to nearest integer)
-            const score = Math.round(baseScore + timeBonus);
-
-            // Average discovery speed: seconds elapsed per insight found
-            const avgSeconds = foundInsights > 0 ? durationSeconds / foundInsights : 0;
+            // 3. Final score is the sum of both (rounded to nearest integer)
+            const score = Math.round(completionScore + efficiencyBonus);
 
             return {
                 foundInsights,
@@ -2345,8 +2353,8 @@
                 durationSeconds,
                 avgSeconds,
                 score,
-                baseScore: Math.round(baseScore),
-                timeBonus: Math.round(timeBonus)
+                completionScore: Math.round(completionScore),
+                efficiencyBonus: Math.round(efficiencyBonus)
             };
         }
 
@@ -2407,7 +2415,11 @@
             timeupScoreEl.textContent = result.score.toLocaleString();
             timeupFoundEl.textContent = result.foundInsights;
             timeupTotalEl.textContent = result.totalInsights;
-            timeupAvgEl.textContent = result.foundInsights > 0 ? `${result.avgSeconds.toFixed(1)}s` : '—';
+            timeupAvgEl.textContent = result.foundInsights === 0
+                ? '—'
+                : result.foundInsights < MIN_INSIGHTS_FOR_PACE_BONUS
+                    ? 'Too few finds'
+                    : `${result.avgSeconds.toFixed(1)}s`;
 
             renderDashboardDistribution();
             submitScore(result);
