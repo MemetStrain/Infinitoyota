@@ -1755,7 +1755,7 @@
         let powerupMilestone = 5;     // next "Discovered Insights" count that grants a charge
         let pendingPowerups = 0;      // charges waiting to be banked (shown as the board-centre icon)
         let bankedPowerups = 0;       // charges banked and ready to use (shown as the top-right icon)
-        const POWERUP_TIME_BONUS_MS = 5000;
+        const POWERUP_TIME_BONUS_MS = 3000;
         let pausedRemainingMs = null; // set while the timer is frozen for an open power-up reveal popup
         let pendingPowerupEntry = null; // the recipe revealed by the popup, discovered when it's closed
 
@@ -2190,6 +2190,7 @@
                         discoveryLog.push({ name: m.result, at: now });
                     });
                     if (newDiscoveries.length) lastDiscoveryTime = now;
+                    addInsightTimeBonus(newDiscoveries.length);
                     failedAttempts = 0;
                     hideClue();
                     updateProgress();
@@ -2466,6 +2467,7 @@
                 const now = Date.now();
                 lastDiscoveryTime = now;
                 discoveryLog.push({ name: entry.result, at: now });
+                addInsightTimeBonus(1);
                 updateProgress();
 
                 const boardRect = board.getBoundingClientRect();
@@ -2649,8 +2651,9 @@
         // --- COUNTDOWN TIMER ---
         const timerDisplay = document.getElementById('timer-display');
         const gameTimerEl = document.getElementById('game-timer');
-        const TIMER_URGENT_MS = 15000;
-        const COUNTDOWN_MS = 90000;
+        const TIMER_URGENT_MS = 30000;
+        const COUNTDOWN_MS = 180000;
+        const INSIGHT_TIME_BONUS_MS = 2000;
         let timerInterval = null;
         let countdownEndTime = null;
 
@@ -2709,6 +2712,19 @@
             gameTimerEl.classList.remove('urgent');
             tickCountdown();
             timerInterval = setInterval(tickCountdown, 30);
+        }
+
+        // +2s per insight found, however it was found. Adds straight to whichever state
+        // currently holds the countdown — the running clock, or a paused reveal popup's
+        // frozen remainder — and no-ops if there's no active countdown (e.g. sandbox mode).
+        function addInsightTimeBonus(count = 1) {
+            if (count <= 0) return;
+            const bonus = count * INSIGHT_TIME_BONUS_MS;
+            if (timerInterval) {
+                countdownEndTime += bonus;
+            } else if (pausedRemainingMs !== null) {
+                pausedRemainingMs += bonus;
+            }
         }
 
         stopTimer();
