@@ -559,6 +559,34 @@
             50%       { transform: translate(-50%, -53%); }
         }
 
+        /* --- MULTI-INSIGHT BURST: cards fly out from the merge point --- */
+        .board-item.burst {
+            animation: burstOut 0.6s cubic-bezier(0.22, 1.35, 0.4, 1) forwards;
+            z-index: 950;
+        }
+
+        @keyframes burstOut {
+            0%   { transform: translate(calc(-50% + var(--burst-dx)), calc(-50% + var(--burst-dy))) scale(0.35) rotate(-8deg); opacity: 0; }
+            45%  { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .burst-ring {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 3px solid var(--toyota-red);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 940;
+            animation: burstRing 0.5s ease-out forwards;
+        }
+
+        @keyframes burstRing {
+            0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(9);   opacity: 0; }
+        }
+
         .board-item:active { cursor: grabbing; animation: none; transform: translate(-50%, -50%) scale(1.04); z-index: 999; }
 
         /* --- RECIPE TREE MODAL --- */
@@ -1593,7 +1621,7 @@
         let discoveryLog = [];        // { name, at } per new discovery — feeds the end-of-round summary
 
         // A recipe key can map to MULTIPLE insights (e.g. Customer+Vehicle unlocks both
-        // Vehicle Ownership and Customer Type). Combining discovers the next undiscovered one.
+        // Vehicle Ownership and Customer Type). One combine bursts out ALL of them at once.
         const CLEANED_RECIPES = {};
         INSIGHT_CATALOG.forEach(entry => {
             const sortedKey = entry.cards.slice().sort().join('+');
@@ -2002,45 +2030,52 @@
                 const item2 = targetElement.dataset.name;
                 const combinedKey = [item1, item2].sort().join('+');
 
-                let resultName;
-                let isNewDiscovery = false;
-                let isFailedMerge = false;
+                const originLeft = targetElement.style.left;
+                const originTop = targetElement.style.top;
                 const matchingInsights = CLEANED_RECIPES[combinedKey];
                 if (matchingInsights) {
-                    // A pair can unlock several insights — discover the next undiscovered one
-                    const entry = matchingInsights.find(m => !discoveredItems.has(m.result)) || matchingInsights[0];
-                    resultName = entry.result;
-                    if (!discoveredItems.has(resultName)) {
-                        discoveredItems.add(resultName);
-                        lastDiscoveryTime = Date.now();
-                        discoveryLog.push({ name: resultName, at: lastDiscoveryTime });
-                        isNewDiscovery = true;
-                    }
+                    // A pair can unlock several insights — one combine bursts out ALL of them
+                    const now = Date.now();
+                    const newDiscoveries = matchingInsights.filter(m => !discoveredItems.has(m.result));
+                    newDiscoveries.forEach(m => {
+                        discoveredItems.add(m.result);
+                        discoveryLog.push({ name: m.result, at: now });
+                    });
+                    if (newDiscoveries.length) lastDiscoveryTime = now;
                     failedAttempts = 0;
                     hideClue();
                     updateProgress();
-                } else {
-                    resultName = [item1, item2].sort()[0];
-                    isFailedMerge = true;
-                    failedAttempts++;
-                    if (failedAttempts >= FAILS_BEFORE_CLUE) {
-                        failedAttempts = 0;
-                        showClue();
+
+                    targetElement.remove();
+                    if (draggedElement.dataset.source === 'board') draggedElement.remove();
+
+                    if (matchingInsights.length > 1) {
+                        spawnInsightBurst(matchingInsights.map(m => m.result), parseFloat(originLeft), parseFloat(originTop));
+                    } else {
+                        createBoardItem(matchingInsights[0].result, originLeft, originTop, true);
                     }
+
+                    if (newDiscoveries.length) {
+                        const topTier = Math.max(...newDiscoveries.map(m => CONCEPT_TIERS[m.result] || 1));
+                        showDiscoveryToast(newDiscoveries.map(m => m.result).join('  +  '), topTier, newDiscoveries.length);
+                        spawnConfetti(Math.min(80, (topTier === 4 ? 55 : 26) + (newDiscoveries.length - 1) * 18), topTier);
+                    }
+                    return;
                 }
 
-                const resultEl = createBoardItem(resultName, targetElement.style.left, targetElement.style.top, true);
+                const resultName = [item1, item2].sort()[0];
+                failedAttempts++;
+                if (failedAttempts >= FAILS_BEFORE_CLUE) {
+                    failedAttempts = 0;
+                    showClue();
+                }
+
+                const resultEl = createBoardItem(resultName, originLeft, originTop, true);
                 targetElement.remove();
                 if (draggedElement.dataset.source === 'board') draggedElement.remove();
 
-                if (isNewDiscovery) {
-                    const resultTier = CONCEPT_TIERS[resultName] || 1;
-                    showDiscoveryToast(resultName, resultTier);
-                    spawnConfetti(resultTier === 4 ? 55 : 26, resultTier);
-                } else if (isFailedMerge) {
-                    resultEl.classList.add('shake');
-                    resultEl.addEventListener('animationend', () => resultEl.classList.remove('shake'), { once: true });
-                }
+                resultEl.classList.add('shake');
+                resultEl.addEventListener('animationend', () => resultEl.classList.remove('shake'), { once: true });
                 return;
             }
 
@@ -2084,15 +2119,48 @@
             return el;
         }
 
+        // Spawn every insight a pair unlocks, exploding radially from the merge point.
+        function spawnInsightBurst(names, originX, originY) {
+            const ring = document.createElement('div');
+            ring.className = 'burst-ring';
+            ring.style.left = `${originX}px`;
+            ring.style.top = `${originY}px`;
+            board.appendChild(ring);
+            ring.addEventListener('animationend', () => ring.remove(), { once: true });
+            setTimeout(() => ring.remove(), 1500); // in case the animation never runs
+
+            const radius = 120;
+            const startAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
+            names.forEach((name, i) => {
+                const angle = startAngle + (i * 2 * Math.PI) / names.length;
+                const el = createBoardItem(name, `${originX}px`, `${originY}px`, false);
+                // Clamp after insertion — the new card's width isn't known until it's in the DOM.
+                const { x, y } = clampToBoard(el, originX + radius * Math.cos(angle),
+                                                  originY + radius * Math.sin(angle));
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.setProperty('--burst-dx', `${originX - x}px`);
+                el.style.setProperty('--burst-dy', `${originY - y}px`);
+                el.classList.add('burst');
+                el.addEventListener('animationend', () => {
+                    el.classList.remove('burst');
+                    el.style.removeProperty('--burst-dx');
+                    el.style.removeProperty('--burst-dy');
+                }, { once: true });
+            });
+        }
+
         // --- DISCOVERY TOAST ---
         const discoveryToast = document.getElementById('discovery-toast');
         const toastNameEl = document.getElementById('toast-name');
         let toastHideTimeout = null;
 
-        function showDiscoveryToast(name, tier) {
+        function showDiscoveryToast(name, tier, count = 1) {
             const meta = TIER_META[tier];
             toastNameEl.textContent = name;
             toastNameEl.style.color = meta.color;
+            discoveryToast.querySelector('.toast-label').textContent =
+                count > 1 ? `✨ ${count} New Insights` : '✨ New Insight';
             discoveryToast.classList.remove('show');
             void discoveryToast.offsetWidth;
             discoveryToast.classList.add('show');
