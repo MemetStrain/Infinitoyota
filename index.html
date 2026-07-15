@@ -101,7 +101,8 @@
         }
 
         #main-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 4fr;
             gap: 20px;
             flex: 1;
             min-height: 0;
@@ -109,8 +110,8 @@
 
         /* --- LEFT SIDEBAR: THE CATALOG --- */
         #inventory {
-            width: 220px;
-            min-width: 180px;
+            min-width: 0;
+            box-sizing: border-box;
             background: var(--surface-white);
             border-radius: 16px;
             padding: 16px;
@@ -119,9 +120,9 @@
             gap: 12px;
             box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
             border: 1px solid var(--border-soft);
-            flex-shrink: 0;
             z-index: 2;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .stats-box {
@@ -335,7 +336,6 @@
 
         /* --- RIGHT SIDE: THE CANVAS --- */
         #board-area {
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -588,6 +588,127 @@
         }
 
         .board-item:active { cursor: grabbing; animation: none; transform: translate(-50%, -50%) scale(1.04); z-index: 999; }
+
+        /* --- INSTANT-USE POWER-UP: banks every 5 discoveries, auto-combines on use --- */
+        :root {
+            --powerup-green: #16a34a;
+            --powerup-green-light: #dcfce7;
+        }
+
+        .board-powerup {
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #4ade80, var(--powerup-green));
+            box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.18), 0 0 24px 6px rgba(74, 222, 128, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            cursor: pointer;
+            z-index: 980;
+            transform: translate(-50%, -50%);
+            animation: powerupPulse 1.6s ease-in-out infinite, popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes powerupPulse {
+            0%, 100% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.18), 0 0 24px 6px rgba(74, 222, 128, 0.55); }
+            50%      { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0.1), 0 0 34px 12px rgba(74, 222, 128, 0.75); }
+        }
+
+        .board-powerup.banking {
+            animation: powerupBank 0.5s ease-in forwards;
+        }
+
+        @keyframes powerupBank {
+            to { left: calc(100% - 46px); top: 46px; transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+        }
+
+        .powerup-badge {
+            position: absolute;
+            top: -6px; right: -6px;
+            background: #ffffff;
+            color: var(--powerup-green);
+            border: 2px solid var(--powerup-green);
+            border-radius: 999px;
+            min-width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .powerup-banked-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #4ade80, var(--powerup-green));
+            box-shadow: 0 6px 16px -4px rgba(22, 163, 74, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            border: none;
+            z-index: 975;
+        }
+
+        .powerup-banked-btn .powerup-badge { display: flex; }
+
+        .powerup-banked-btn.no-target { animation: shakeItem 0.4s; }
+
+        .item.hint-glow { animation: hintGlow 1.1s ease-out; }
+
+        @keyframes hintGlow {
+            0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+            40%  { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.35); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+
+        /* Gameplay freezes while the power-up reveal popup is open. */
+        #board.powerup-frozen .board-item,
+        #board.powerup-frozen #board-powerup,
+        #board.powerup-frozen .powerup-banked-btn {
+            pointer-events: none;
+        }
+
+        /* --- POWER-UP REVEAL POPUP --- */
+        #powerup-popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #powerup-popup-overlay.active { opacity: 1; pointer-events: auto; }
+
+        #powerup-popup-card {
+            background: var(--surface-white);
+            width: 380px;
+            max-width: 92vw;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.85);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #powerup-popup-overlay.active #powerup-popup-card { transform: scale(1); }
 
         /* --- RECIPE TREE MODAL --- */
         #modal-overlay {
@@ -1401,10 +1522,10 @@
                         <option value="" disabled selected>Select your division</option>
                         <option>ASBD</option>
                         <option>AREA</option>
-                        <option>CP</option>
+                        <option>CPLD</option>
                         <option>CFAM</option>
                         <option>FAD</option>
-                        <option>GR</option>
+                        <option>GovRe</option>
                         <option>HRGA</option>
                         <option>ISTD</option>
                         <option>LEXUS</option>
@@ -1521,6 +1642,16 @@
         </div>
     </div>
 
+    <div id="powerup-popup-overlay">
+        <div id="powerup-popup-card">
+            <div class="modal-header">
+                <h3>💡 Power-Up Reveal</h3>
+                <button class="close-btn" id="close-powerup-popup">✕</button>
+            </div>
+            <div id="powerup-card-slot"></div>
+        </div>
+    </div>
+
     <div id="leaderboard-overlay">
         <div id="leaderboard-card">
             <div class="modal-header">
@@ -1619,6 +1750,14 @@
         let gameStartTime = null;
         let lastDiscoveryTime = null;
         let discoveryLog = [];        // { name, at } per new discovery — feeds the end-of-round summary
+
+        // --- INSTANT-USE POWER-UP ---
+        let powerupMilestone = 5;     // next "Discovered Insights" count that grants a charge
+        let pendingPowerups = 0;      // charges waiting to be banked (shown as the board-centre icon)
+        let bankedPowerups = 0;       // charges banked and ready to use (shown as the top-right icon)
+        const POWERUP_TIME_BONUS_MS = 5000;
+        let pausedRemainingMs = null; // set while the timer is frozen for an open power-up reveal popup
+        let pendingPowerupEntry = null; // the recipe revealed by the popup, discovered when it's closed
 
         // A recipe key can map to MULTIPLE insights (e.g. Customer+Vehicle unlocks both
         // Vehicle Ownership and Customer Type). One combine bursts out ALL of them at once.
@@ -1763,6 +1902,8 @@
                     }
                 });
             });
+
+            checkPowerupMilestone(unlockedInsights.length);
         }
 
         function initInventory() {
@@ -1825,7 +1966,7 @@
         // --- CLUE CHAT BUBBLE ---
         const clueBubble = document.getElementById('clue-bubble');
         const clueText = document.getElementById('clue-text');
-        const FAILS_BEFORE_CLUE = 3;
+        const FAILS_BEFORE_CLUE = 2;
         const CLUE_VISIBLE_MS = 8000;
         let clueHideTimeout = null;
 
@@ -1882,6 +2023,12 @@
             initInventory();
             counterEl.textContent = 0;
             progressFillEl.style.width = '0%';
+
+            powerupMilestone = 5;
+            pendingPowerups = 0;
+            bankedPowerups = 0;
+            document.getElementById('board-powerup')?.remove();
+            document.getElementById('powerup-banked-btn')?.remove();
         }
 
         document.addEventListener('click', (e) => {
@@ -2128,7 +2275,6 @@
             ring.style.top = `${originY}px`;
             board.appendChild(ring);
             ring.addEventListener('animationend', () => ring.remove(), { once: true });
-            setTimeout(() => ring.remove(), 1500); // in case the animation never runs
 
             const radius = 120;
             const startAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
@@ -2189,6 +2335,162 @@
             }
         }
 
+        // --- INSTANT-USE POWER-UP ---
+        // Every 5 "Discovered Insights" grants a charge. Charges wait on a glowing
+        // board-centre icon until the player banks them into the top-right counter;
+        // using a banked charge auto-combines a valid unseen pair straight onto the board.
+        function checkPowerupMilestone(unlockedCount) {
+            let gained = false;
+            while (unlockedCount >= powerupMilestone) {
+                pendingPowerups++;
+                powerupMilestone += 5;
+                gained = true;
+            }
+            if (gained) renderBoardPowerup();
+        }
+
+        function renderBoardPowerup() {
+            let el = document.getElementById('board-powerup');
+            if (pendingPowerups <= 0) {
+                if (el) el.remove();
+                return;
+            }
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'board-powerup';
+                el.className = 'board-powerup';
+                el.title = 'Bank this power-up';
+                el.innerHTML = '💡<span class="powerup-badge"></span>';
+                el.addEventListener('click', bankPowerup);
+                board.appendChild(el);
+            }
+            const badge = el.querySelector('.powerup-badge');
+            badge.textContent = pendingPowerups > 1 ? pendingPowerups : '';
+            badge.style.display = pendingPowerups > 1 ? 'flex' : 'none';
+        }
+
+        function bankPowerup() {
+            const el = document.getElementById('board-powerup');
+            if (!el) return;
+            el.removeEventListener('click', bankPowerup);
+            el.classList.add('banking');
+            bankedPowerups += pendingPowerups;
+            pendingPowerups = 0;
+            renderPowerupBankedButton();
+            el.addEventListener('animationend', () => el.remove(), { once: true });
+        }
+
+        function renderPowerupBankedButton() {
+            let btn = document.getElementById('powerup-banked-btn');
+            if (bankedPowerups <= 0) {
+                if (btn) btn.remove();
+                return;
+            }
+            if (!btn) {
+                btn = document.createElement('button');
+                btn.id = 'powerup-banked-btn';
+                btn.className = 'powerup-banked-btn';
+                btn.title = 'Use power-up';
+                btn.innerHTML = '💡<span class="powerup-badge"></span>';
+                btn.addEventListener('click', useBankedPowerup);
+                board.appendChild(btn);
+            }
+            btn.querySelector('.powerup-badge').textContent = bankedPowerups;
+        }
+
+        function findAutoCombineRecipe() {
+            const avail = new Set([...BASIC_DATA, ...discoveredItems]);
+            const candidates = INSIGHT_CATALOG.filter(entry =>
+                !discoveredItems.has(entry.result) && entry.cards.every(c => avail.has(c))
+            );
+            if (!candidates.length) return null;
+            return candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
+        function flashSidebarGlow(names) {
+            names.forEach(name => {
+                const el = inventoryContainer.querySelector(`.item[data-name="${CSS.escape(name)}"]`);
+                if (!el) return;
+                el.classList.remove('hint-glow');
+                void el.offsetWidth;
+                el.classList.add('hint-glow');
+                el.addEventListener('animationend', () => el.classList.remove('hint-glow'), { once: true });
+            });
+        }
+
+        // --- POWER-UP REVEAL POPUP ---
+        const powerupPopupOverlay = document.getElementById('powerup-popup-overlay');
+        const powerupCardSlot = document.getElementById('powerup-card-slot');
+        const closePowerupPopupBtn = document.getElementById('close-powerup-popup');
+
+        function useBankedPowerup() {
+            if (bankedPowerups <= 0 || pausedRemainingMs !== null) return;
+            const btn = document.getElementById('powerup-banked-btn');
+            const entry = findAutoCombineRecipe();
+            if (!entry) {
+                // Nothing left to auto-discover yet — keep the charge, just shake the icon.
+                if (btn) {
+                    btn.classList.remove('no-target');
+                    void btn.offsetWidth;
+                    btn.classList.add('no-target');
+                }
+                return;
+            }
+
+            bankedPowerups--;
+            renderPowerupBankedButton();
+
+            pendingPowerupEntry = entry;
+            powerupCardSlot.innerHTML = '';
+            powerupCardSlot.appendChild(renderPowerupRevealCard(entry));
+
+            pauseTimerForPowerup();
+            board.classList.add('powerup-frozen');
+            powerupPopupOverlay.classList.add('active');
+        }
+
+        // Closing the popup is what actually delivers the insight — the reveal comes first,
+        // then the discovery + board spawn + timer bonus land together as one payoff.
+        function closePowerupPopup() {
+            if (!powerupPopupOverlay.classList.contains('active')) return;
+            powerupPopupOverlay.classList.remove('active');
+            board.classList.remove('powerup-frozen');
+
+            const entry = pendingPowerupEntry;
+            pendingPowerupEntry = null;
+
+            if (entry) {
+                flashSidebarGlow(entry.cards);
+
+                discoveredItems.add(entry.result);
+                const now = Date.now();
+                lastDiscoveryTime = now;
+                discoveryLog.push({ name: entry.result, at: now });
+                updateProgress();
+
+                const boardRect = board.getBoundingClientRect();
+                const cx = boardRect.width / 2 + (Math.random() - 0.5) * 160;
+                const cy = boardRect.height / 2 + (Math.random() - 0.5) * 120;
+                const el = createBoardItem(entry.result, `${cx}px`, `${cy}px`, false);
+                const { x, y } = clampToBoard(el, cx, cy);
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.classList.add('pop');
+                el.addEventListener('animationend', () => el.classList.remove('pop'), { once: true });
+
+                const tier = CONCEPT_TIERS[entry.result] || 1;
+                showDiscoveryToast(entry.result, tier);
+                spawnConfetti(tier === 4 ? 55 : 26, tier);
+            }
+
+            resumeTimerAfterPowerup(POWERUP_TIME_BONUS_MS);
+        }
+
+        closePowerupPopupBtn.addEventListener('click', closePowerupPopup);
+        powerupPopupOverlay.addEventListener('click', (e) => {
+            if (e.target === powerupPopupOverlay) closePowerupPopup();
+        });
+
         // --- TREE MODAL ---
         let treeOpenedFromTimeUp = false;
 
@@ -2236,6 +2538,46 @@
             'Digital':    'digital'
         };
 
+        // Shared markup for a fully-revealed insight card. `showTime` controls whether the
+        // "found at Ns" badge is looked up — irrelevant (and absent from discoveryLog) for a
+        // recipe that isn't discovered yet, like the power-up's reveal target.
+        function buildInsightDetailHTML(entry, { showTime }) {
+            const tier = CONCEPT_TIERS[entry.result] || 1;
+            const levelBadge = `<span class="tier-badge" style="${getTierBadgeStyle(tier)}">${TIER_META[tier].code}</span>`;
+            const resultMeta = getCardMeta(entry.result);
+            const accent = CATEGORY_META[resultMeta.category];
+
+            const logEntry = showTime ? discoveryLog.find(d => d.name === entry.result) : null;
+            const timeHtml = (logEntry && gameStartTime)
+                ? `<span class="insight-card-time">⏱ ${((logEntry.at - gameStartTime) / 1000).toFixed(0)}s</span>`
+                : '';
+
+            const chipsHtml = entry.cards.map(ing => {
+                const ingMeta = getCardMeta(ing);
+                const ingCat = CATEGORY_META[ingMeta.category];
+                return `<span class="recipe-chip" style="border-color:${ingCat.color};background:${ingCat.light}">${ingMeta.emoji} ${ing}</span>`;
+            }).join('<span class="recipe-plus">+</span>');
+
+            const dashCat = CATEGORY_META[DASHBOARD_CATEGORY[entry.dashboard]];
+            const dashboardHtml = dashCat
+                ? `<div class="insight-card-dash-row"><span class="insight-card-dash-label">Source Dashboard:</span> <span class="insight-card-dash" style="color:${dashCat.color};background:${dashCat.light}">📊 ${entry.dashboard} Dashboard</span></div>`
+                : '';
+
+            return {
+                accentColor: accent.color,
+                html: `
+                    <div class="insight-card-head">
+                        <span class="insight-card-name">${resultMeta.emoji} ${entry.result}</span>
+                        <span class="insight-card-meta">${timeHtml}${levelBadge}</span>
+                    </div>
+                    <div class="insight-card-recipe">${chipsHtml}</div>
+                    <p class="insight-card-desc">${entry.description}</p>
+                    <p class="insight-card-value">💡 ${entry.value}</p>
+                    ${dashboardHtml}
+                `
+            };
+        }
+
         function renderInsightCard(entry) {
             const tier = CONCEPT_TIERS[entry.result] || 1;
             const levelBadge = `<span class="tier-badge" style="${getTierBadgeStyle(tier)}">${TIER_META[tier].code}</span>`;
@@ -2253,38 +2595,21 @@
                 return card;
             }
 
-            const resultMeta = getCardMeta(entry.result);
-            const accent = CATEGORY_META[resultMeta.category];
-
-            // When this insight was found, in seconds from round start
-            const logEntry = discoveryLog.find(d => d.name === entry.result);
-            const timeHtml = (logEntry && gameStartTime)
-                ? `<span class="insight-card-time">⏱ ${((logEntry.at - gameStartTime) / 1000).toFixed(0)}s</span>`
-                : '';
-
-            const chipsHtml = entry.cards.map(ing => {
-                const ingMeta = getCardMeta(ing);
-                const ingCat = CATEGORY_META[ingMeta.category];
-                return `<span class="recipe-chip" style="border-color:${ingCat.color};background:${ingCat.light}">${ingMeta.emoji} ${ing}</span>`;
-            }).join('<span class="recipe-plus">+</span>');
-
-            const dashCat = CATEGORY_META[DASHBOARD_CATEGORY[entry.dashboard]];
-            const dashboardHtml = dashCat
-                ? `<div class="insight-card-dash-row"><span class="insight-card-dash-label">Source Dashboard:</span> <span class="insight-card-dash" style="color:${dashCat.color};background:${dashCat.light}">📊 ${entry.dashboard} Dashboard</span></div>`
-                : '';
-
+            const { accentColor, html } = buildInsightDetailHTML(entry, { showTime: true });
             card.className = 'insight-card';
-            card.style.borderLeftColor = accent.color;
-            card.innerHTML = `
-                <div class="insight-card-head">
-                    <span class="insight-card-name">${resultMeta.emoji} ${entry.result}</span>
-                    <span class="insight-card-meta">${timeHtml}${levelBadge}</span>
-                </div>
-                <div class="insight-card-recipe">${chipsHtml}</div>
-                <p class="insight-card-desc">${entry.description}</p>
-                <p class="insight-card-value">💡 ${entry.value}</p>
-                ${dashboardHtml}
-            `;
+            card.style.borderLeftColor = accentColor;
+            card.innerHTML = html;
+            return card;
+        }
+
+        // Same visual card as renderInsightCard, but deliberately reveals an UNDISCOVERED
+        // recipe — used by the power-up popup to show what it's about to make.
+        function renderPowerupRevealCard(entry) {
+            const card = document.createElement('div');
+            const { accentColor, html } = buildInsightDetailHTML(entry, { showTime: false });
+            card.className = 'insight-card';
+            card.style.borderLeftColor = accentColor;
+            card.innerHTML = html;
             return card;
         }
 
@@ -2336,32 +2661,54 @@
             return `${seconds}.${millis}`;
         }
 
+        function tickCountdown() {
+            const remaining = countdownEndTime - Date.now();
+            timerDisplay.textContent = formatTime(remaining);
+            gameTimerEl.classList.toggle('urgent', remaining > 0 && remaining <= TIMER_URGENT_MS);
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                gameTimerEl.classList.remove('urgent');
+                showTimeUpModal();
+            }
+        }
+
         function stopTimer() {
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = null;
             countdownEndTime = null;
+            pausedRemainingMs = null;
+            pendingPowerupEntry = null;
             timerDisplay.textContent = formatTime(COUNTDOWN_MS);
             gameTimerEl.classList.remove('urgent');
+            board.classList.remove('powerup-frozen');
+            powerupPopupOverlay.classList.remove('active');
         }
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             countdownEndTime = Date.now() + COUNTDOWN_MS;
             gameTimerEl.classList.remove('urgent');
+            tickCountdown();
+            timerInterval = setInterval(tickCountdown, 30);
+        }
 
-            const tick = () => {
-                const remaining = countdownEndTime - Date.now();
-                timerDisplay.textContent = formatTime(remaining);
-                gameTimerEl.classList.toggle('urgent', remaining > 0 && remaining <= TIMER_URGENT_MS);
-                if (remaining <= 0) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    gameTimerEl.classList.remove('urgent');
-                    showTimeUpModal();
-                }
-            };
-            tick();
-            timerInterval = setInterval(tick, 30);
+        // Freeze the countdown for an open power-up reveal popup — the exact remaining time
+        // is captured so no progress is lost while the player looks at the reveal.
+        function pauseTimerForPowerup() {
+            if (!timerInterval) { pausedRemainingMs = null; return; } // not running (sandbox mode)
+            pausedRemainingMs = Math.max(0, countdownEndTime - Date.now());
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resumeTimerAfterPowerup(bonusMs) {
+            if (pausedRemainingMs === null) return; // wasn't running when the popup opened
+            countdownEndTime = Date.now() + pausedRemainingMs + bonusMs;
+            pausedRemainingMs = null;
+            gameTimerEl.classList.remove('urgent');
+            tickCountdown();
+            timerInterval = setInterval(tickCountdown, 30);
         }
 
         stopTimer();
