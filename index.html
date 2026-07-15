@@ -1851,10 +1851,11 @@
                 clueTitle.textContent = '💼 Business Question';
                 clueText.textContent = entry.question;
             } else {
-                // EI / C360 insights have no question — hint one required card instead
+                // EI / C360 insights have no question — hint both required cards instead
                 clueTitle.textContent = '🔧 Pit Crew Tip';
-                const knownIngredient = entry.cards[Math.floor(Math.random() * entry.cards.length)];
-                clueText.textContent = `${knownIngredient} + ? = New Insight`;
+                
+                // Join all required cards with a " + " sign
+                clueText.textContent = `${entry.cards.join(' + ')} = New Insight`;
             }
             clueBubble.classList.remove('show');
             // Force a reflow so re-triggering replays the pop animation
